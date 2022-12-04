@@ -1,13 +1,14 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ModelGeneration;
+using PsqlAccess;
 using Serilog;
 using System.Reflection;
 
 IConfiguration configuration = BuildConfig();
-var aaa = configuration.AsEnumerable();
 
 var LoopTimes = configuration["LoopTimes"];
 
@@ -22,6 +23,8 @@ var host = Host.CreateDefaultBuilder()
     .ConfigureServices((context, services) =>
     {
         services.AddTransient<GreetingService, GreetingService>();
+        services.AddDbContext<AppDbContext>(
+            o => o.UseNpgsql(configuration["ConnectionString:DefaultConnection"]));
     })
     .UseSerilog()
     .Build();

@@ -28,4 +28,8 @@
 		<PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Plugins\PsqlAccess\PsqlAccess.csproj" />
+	</ItemGroup>
+
 </Project>

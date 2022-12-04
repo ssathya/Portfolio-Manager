@@ -9,7 +9,7 @@ public class BuildSP500Lst : IBuildSP500Lst
     #region Private Fields
 
     private const string dataSource = @"https://en.wikipedia.org/wiki/List_of_S%26P_500_companies";
-    private const string nodeEleToProcess = @"//*[@id=\""constituents\""]/tbody/tr";
+    private const string nodeEleToProcess = """//*[@id="constituents"]/tbody/tr""";
     private const string tableData = @"td";
     private const string tableHeader = @"<th>";
     private readonly ILogger<BuildSP500Lst> logger;

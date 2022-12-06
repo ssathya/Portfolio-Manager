@@ -3,19 +3,25 @@ using System.Linq.Expressions;
 
 namespace PsqlAccess;
 
-public interface IRepository<T> where T : IEntity
+public interface IRepository<T> where T : Entity
 {
-    T FindById(int id, params Expression<Func<T, object>>[] includeProperties);
+    Task<T?> FindById(int id, params Expression<Func<T, object>>[] includeProperties);
 
-    IQueryable<T> FindAll(params Expression<Func<T, object>>[] includeProperties);
+    Task<IEnumerable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties);
 
-    IEnumerable<T> FindAll(Expression<Func<T, object>> predicate, params Expression<Func<T, object>>[] includeProperties);
+    Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
 
-    void Add(T entity);
+    Task Add(T entity);
 
-    void Remove(T entity);
+    Task Add(IEnumerable<T> entities);
 
-    void Remove(int id);
+    Task Remove(T entity);
 
-    void Update(T entity);
+    Task Remove(IEnumerable<T> entities);
+
+    Task Remove(int id);
+
+    Task Update(T entity);
+
+    Task Update(IEnumerable<T> entities);
 }

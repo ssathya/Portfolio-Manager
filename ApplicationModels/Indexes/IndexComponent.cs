@@ -2,13 +2,12 @@
 
 namespace ApplicationModels.Indexes;
 
-public class IndexComponent : IEntity
+public class IndexComponent : Entity
 {
     #region Public Properties
 
-    public int Id { get; set; }
     public string CompanyName { get; set; } = string.Empty;
-    public IndexNames IdxName { get; set; }
+    public IndexNames ListedInIndex { get; set; }
     public string Sector { get; set; } = string.Empty;
     public string SubSector { get; set; } = string.Empty;
     public string Ticker { get; set; } = string.Empty;

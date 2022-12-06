@@ -1,6 +1,8 @@
-﻿using AppCommon.Services;
+﻿using AppCommon.DatabaseHandler;
+using AppCommon.Services;
 using ApplicationModels.Indexes;
 using ManageSPList.Processing;
+using ManageSPList.Processing.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,42 +49,21 @@ public class Function
         return;
     }
 
-    private async Task SaveValuesToDb(List<IndexComponent> extractResult, ServiceProvider provider)
+    private async Task<bool> SaveValuesToDb(List<IndexComponent> extractResult, ServiceProvider provider)
     {
-        IRepository<IndexComponent>? repositoryHandler = null;
-        try
+        IHandleDataInDatabase handleDataInDatabase = provider.GetRequiredService<IHandleDataInDatabase>();
+        if (handleDataInDatabase != null)
         {
-            repositoryHandler = provider.GetRequiredService<IRepository<IndexComponent>>();
+            var processingResult = await handleDataInDatabase.ExecAsync(extractResult, IndexNames.SnP);
+            return processingResult;
         }
-        catch (Exception ex)
-        {
-            if (logger != null)
-            {
-                logger.LogCritical(ex.Message);
-            }
-            return;
-        }
-
-        List<IndexComponent> existingRcds = (await repositoryHandler.FindAll(x => x.IdxName.HasFlag(IndexNames.SnP)))
-            .ToList();
-
-        //items to insert
-        List<IndexComponent> newRcds = new();
-        foreach (var rcd in extractResult)
-        {
-            var newRcd = existingRcds.FirstOrDefault(x => x.Ticker == rcd.Ticker);
-            if (newRcd != null)
-            {
-                newRcd.IdxName |= IndexNames.SnP;
-                newRcds.Add(newRcd);
-            }
-        }
-        await repositoryHandler.Add(newRcds);
+        return false;
     }
 
     private static void AppSpecificSettings(IServiceCollection services)
     {
         services.AddScoped<IBuildSP500Lst, BuildSP500Lst>();
+        services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
     }
 

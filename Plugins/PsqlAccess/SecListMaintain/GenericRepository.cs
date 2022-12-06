@@ -47,25 +47,34 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         await dbCondext.SaveChangesAsync();
     }
 
-    public async Task<IQueryable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties)
+    public async Task<IEnumerable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties)
     {
         using AppDbContext dbCondext = await contextFactory.CreateDbContextAsync();
         IQueryable<T> items = dbCondext.Set<T>();
-        if (includeProperties == null)
+        if (includeProperties == null || includeProperties.Length == 0)
         {
-            return items;
+            return await items.ToListAsync();
         }
         foreach (var includeProperty in includeProperties)
         {
             items = items.Include(includeProperty);
         }
-        return items;
+        return await items.ToListAsync();
     }
 
     public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
     {
-        var items = await FindAll(includeProperties);
-        return items.Where(predicate);
+        //var items = await FindAll(includeProperties);
+        using AppDbContext dbCondext = await contextFactory.CreateDbContextAsync();
+        IQueryable<T> items = dbCondext.Set<T>();
+        if (includeProperties != null && includeProperties.Length != 0)
+        {
+            foreach (var includeProperty in includeProperties)
+            {
+                items = items.Include(includeProperty);
+            }
+        }
+        return await items.Where(predicate).ToListAsync();
     }
 
     public async Task<T?> FindById(int id, params Expression<Func<T, object>>[] includeProperties)

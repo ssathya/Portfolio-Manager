@@ -1,5 +1,6 @@
 ﻿using ApplicationModels.Indexes;
 using HtmlAgilityPack;
+using ManageSPList.Processing.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace ManageSPList.Processing;
@@ -92,7 +93,7 @@ public class BuildSP500Lst : IBuildSP500Lst
             index++;
         }
         rValue.CleanUpValues();
-        rValue.IdxName = IndexNames.SnP;
+        rValue.ListedInIndex = IndexNames.SnP;
         return rValue;
     }
 

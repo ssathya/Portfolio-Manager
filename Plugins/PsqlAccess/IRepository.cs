@@ -7,7 +7,7 @@ public interface IRepository<T> where T : Entity
 {
     Task<T?> FindById(int id, params Expression<Func<T, object>>[] includeProperties);
 
-    Task<IQueryable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties);
+    Task<IEnumerable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties);
 
     Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
 

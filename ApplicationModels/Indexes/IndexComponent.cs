@@ -7,7 +7,7 @@ public class IndexComponent : Entity
     #region Public Properties
 
     public string CompanyName { get; set; } = string.Empty;
-    public IndexNames IdxName { get; set; }
+    public IndexNames ListedInIndex { get; set; }
     public string Sector { get; set; } = string.Empty;
     public string SubSector { get; set; } = string.Empty;
     public string Ticker { get; set; } = string.Empty;

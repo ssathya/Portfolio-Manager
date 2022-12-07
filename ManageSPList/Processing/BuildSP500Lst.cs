@@ -51,6 +51,7 @@ public class BuildSP500Lst : IBuildSP500Lst
         {
             if (node.InnerHtml.Contains(tableHeader, StringComparison.InvariantCultureIgnoreCase))
             {
+                logger.LogInformation($"Skipping row {node.InnerHtml}");
                 continue;
             }
             IndexComponent ic = ExtractFirmFromNode(node);

@@ -1,4 +1,5 @@
-﻿using ApplicationModels.Indexes;
+﻿using ApplicationModels.EarningsCal;
+using ApplicationModels.Indexes;
 using Microsoft.EntityFrameworkCore;
 
 namespace PsqlAccess;
@@ -18,6 +19,7 @@ public class AppDbContext : DbContext
     #region Public Properties
 
     public DbSet<IndexComponent> IndexComponents { get; set; }
+    public DbSet<EarningsCalendar> earningsCalendars { get; set; }
 
     #endregion Public Properties
 

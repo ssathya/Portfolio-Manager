@@ -31,6 +31,7 @@ var host = Host.CreateDefaultBuilder()
 
 var svc = ActivatorUtilities.CreateInstance<GreetingService>(host.Services);
 svc.Run();
+Log.Logger.Information("This application does nothing; used for model creation");
 
 static IConfigurationRoot BuildConfig()
 {

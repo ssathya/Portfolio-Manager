@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManageQQQList", "ManageQQQL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManageDowList", "ManageDowList\ManageDowList.csproj", "{2AF40908-BBB4-475F-953C-2DDA261DC00C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarningsCalendar", "EarningsCalendar\EarningsCalendar.csproj", "{4DE3B54D-208C-4A78-A82A-21D3FB2AE398}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{2AF40908-BBB4-475F-953C-2DDA261DC00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2AF40908-BBB4-475F-953C-2DDA261DC00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AF40908-BBB4-475F-953C-2DDA261DC00C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DE3B54D-208C-4A78-A82A-21D3FB2AE398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DE3B54D-208C-4A78-A82A-21D3FB2AE398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DE3B54D-208C-4A78-A82A-21D3FB2AE398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DE3B54D-208C-4A78-A82A-21D3FB2AE398}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

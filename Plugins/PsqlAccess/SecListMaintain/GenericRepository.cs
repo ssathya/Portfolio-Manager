@@ -1,5 +1,4 @@
 ﻿using ApplicationModels;
-using ApplicationModels.Indexes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -23,13 +22,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             dbCondext.Add(entity);
+            await dbCondext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in Adding a value to database ");
             logger.LogError(ex.Message);
         }
-        await dbCondext.SaveChangesAsync();
     }
 
     public async Task Add(IEnumerable<T> entities)
@@ -38,13 +37,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             await dbCondext.AddRangeAsync(entities);
+            await dbCondext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in Adding values to database ");
             logger.LogError(ex.Message);
         }
-        await dbCondext.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<T>> FindAll(params Expression<Func<T, object>>[] includeProperties)
@@ -97,13 +96,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             dbCondext.Remove(entity);
+            await dbCondext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in deleting value from database ");
             logger.LogError(ex.Message);
         }
-        await dbCondext.SaveChangesAsync();
     }
 
     public async Task Remove(IEnumerable<T> entities)
@@ -115,13 +114,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
             await appDbConext.Set<T>()
                 .Where(x => ids.Contains(x.Id))
                 .ExecuteDeleteAsync();
+            await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in deleting values from database ");
             logger.LogError(ex.Message);
         }
-        await appDbConext.SaveChangesAsync();
     }
 
     public async Task Remove(int id)
@@ -130,14 +129,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             appDbConext.Remove(id);
+            await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in deleting values from database ");
             logger.LogError(ex.Message);
         }
-
-        await appDbConext.SaveChangesAsync();
     }
 
     public async Task Update(T entity)
@@ -146,13 +144,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             appDbConext.Update(entity);
+            await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in updating values in database ");
             logger.LogError(ex.Message);
         }
-        await appDbConext.SaveChangesAsync();
     }
 
     public async Task Update(IEnumerable<T> entities)
@@ -161,13 +159,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         try
         {
             appDbConext.UpdateRange(entities);
+            await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
-            logger.LogError("Error in MainintainSecList ");
+            logger.LogError("Error in updating values in database ");
             logger.LogError(ex.Message);
         }
-        await appDbConext.SaveChangesAsync();
     }
 
     Task<T?> IRepository<T>.FindById(int id, params Expression<Func<T, object>>[] includeProperties)

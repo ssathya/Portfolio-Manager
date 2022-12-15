@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AppCommon.CacheHandler;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -19,6 +20,12 @@ public static class ServiceHandler
         SetupLogger(services, Configuration);
         //Setup db connection
         SetupDatabaseConnection(services, Configuration);
+
+        //for cache
+        services.AddScoped<HttpClient>();
+        //Setup Cache service
+        CacheInitialize.Initialize(applicationName);
+
         return services;
     }
 

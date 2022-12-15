@@ -10,6 +10,6 @@ public class EarningsCalendar : Entity
     public DateTime EarningsDateYahoo { get; set; } = new DateTime(1900, 1, 1);
     public DateTime VendorEarningsDate { get; set; } = new DateTime(1900, 1, 1);
     public DateTime EarningsReadDate { get; set; } = new DateTime(1900, 1, 1);
-    public DateTime NextRefreshDate { get; set; } = new DateTime(1900, 1, 1);
+    public DateTime RemoveDate { get; set; } = new DateTime(2100, 1, 1);
     public bool DataObtained { get; set; } = false;
 }

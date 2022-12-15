@@ -3,22 +3,32 @@ using ApplicationModels.Indexes;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
 
-namespace EarningsCalendar.Processing;
+namespace EarnCal.Processing;
 
 public class EarningsCalToDb
 {
-    private readonly IRepository<ApplicationModels.EarningsCal.EarningsCalendar> ecRepository;
+    #region Private Fields
+
+    private readonly IRepository<EarningsCalendar> ecRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<EarningsCalToDb> logger;
 
+    #endregion Private Fields
+
+    #region Public Constructors
+
     public EarningsCalToDb(IRepository<IndexComponent> idxRepository
-        , IRepository<ApplicationModels.EarningsCal.EarningsCalendar> ecRepository
+        , IRepository<EarningsCalendar> ecRepository
         , ILogger<EarningsCalToDb> logger)
     {
         this.idxRepository = idxRepository;
         this.ecRepository = ecRepository;
         this.logger = logger;
     }
+
+    #endregion Public Constructors
+
+    #region Public Methods
 
     public async Task<bool> UpdateFinnHubData(FinnhubCal finnhubCal)
     {
@@ -28,7 +38,7 @@ public class EarningsCalToDb
         }
         List<string> tickersToProcess;
         List<string> indexIndustries;
-        IEnumerable<ApplicationModels.EarningsCal.EarningsCalendar>? earingsCalInDb;
+        IEnumerable<EarningsCalendar>? earingsCalInDb;
         try
         {
             (tickersToProcess, indexIndustries, earingsCalInDb)
@@ -74,15 +84,70 @@ public class EarningsCalToDb
         return true;
     }
 
-    private async Task AddNewRecordsToDb(IEnumerable<Earningscalendar> earnCal, IEnumerable<ApplicationModels.EarningsCal.EarningsCalendar> earingsCalInDb)
+    public async Task<bool> UpdateYahooEarningsCal(List<YahooEarningCal> yahooEarningsDates)
+    {
+        List<string> tickersToProcess = yahooEarningsDates.Select(x => x.Symbol).ToList();
+        IEnumerable<EarningsCalendar>? existingRecords = await UpdateExistingRecords(yahooEarningsDates, tickersToProcess);
+        if (existingRecords == null)
+        {
+            return false;
+        }
+
+        bool updateResult = await AddNewRecords(yahooEarningsDates, tickersToProcess, existingRecords);
+        return updateResult;
+    }
+
+    #endregion Public Methods
+
+    #region Private Methods
+
+    private async Task<bool> AddNewRecords(List<YahooEarningCal> yahooEarningsDates, List<string> tickersToProcess, IEnumerable<EarningsCalendar> existingRecords)
+    {
+        List<string> existingTickers = existingRecords.Select(x => x.Ticker).ToList();
+        tickersToProcess = tickersToProcess.Except(existingTickers).ToList();
+        var defaultDate = new DateTime(1900, 1, 1).ToUniversalTime();
+        List<EarningsCalendar> newEarningCals = new();
+        foreach (var tickerToProcess in tickersToProcess)
+        {
+            var yahooDate = yahooEarningsDates.FirstOrDefault(x => x.Symbol.Equals(tickerToProcess, StringComparison.OrdinalIgnoreCase));
+            if (yahooDate == default)
+            {
+                continue;
+            }
+            newEarningCals.Add(new EarningsCalendar()
+            {
+                Ticker = tickerToProcess,
+                VendorEarningsDate = defaultDate,
+                RemoveDate = DateTime.UtcNow.AddMonths(1),
+                EarningsDateYahoo = yahooDate.ReportingDate.ToUniversalTime(),
+                EarningsReadDate = defaultDate
+            });
+        }
+        if (newEarningCals.Any())
+        {
+            try
+            {
+                await ecRepository.Add(newEarningCals);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Unable to add dataset EarningsCalendar in method EarningsCalToDb:UpdateExistingRecords");
+                logger.LogError(ex.ToString());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private async Task AddNewRecordsToDb(IEnumerable<Earningscalendar> earnCal, IEnumerable<EarningsCalendar> earingsCalInDb)
     {
         IEnumerable<string> tickersInDb = earingsCalInDb.Select(x => x.Ticker);
         IEnumerable<Earningscalendar> earningscalendars = earnCal.Where(x => !tickersInDb.Contains(x.Symbol));
-        List<ApplicationModels.EarningsCal.EarningsCalendar> newEarningCals = new();
+        List<EarningsCalendar> newEarningCals = new();
         var defaultDate = new DateTime(1900, 1, 1).ToUniversalTime();
         foreach (var ec in earningscalendars)
         {
-            newEarningCals.Add(new ApplicationModels.EarningsCal.EarningsCalendar()
+            newEarningCals.Add(new EarningsCalendar()
             {
                 Ticker = ec.Symbol,
                 VendorEarningsDate = ec.Date.ToUniversalTime(),
@@ -97,7 +162,7 @@ public class EarningsCalToDb
         }
     }
 
-    private async Task<(List<string>, List<string>, IEnumerable<ApplicationModels.EarningsCal.EarningsCalendar>)>
+    private async Task<(List<string>, List<string>, IEnumerable<EarningsCalendar>)>
         GetTickersFromDatabase(FinnhubCal finnhubCal)
     {
         List<string> tickersToProcess;
@@ -112,7 +177,7 @@ public class EarningsCalToDb
         List<string> indexIndustries = (await idxRepository.FindAll(x => tickersToProcess.Contains(x.Ticker)))
             .Select(x => x.Ticker)
             .ToList();
-        List<ApplicationModels.EarningsCal.EarningsCalendar> earingsCalInDb = new();
+        List<EarningsCalendar> earingsCalInDb = new();
         try
         {
             earingsCalInDb = (await ecRepository.FindAll(x => tickersToProcess.Contains(x.Ticker)))
@@ -136,7 +201,7 @@ public class EarningsCalToDb
         }
     }
 
-    private async Task UpdateExistingRecords(IEnumerable<ApplicationModels.EarningsCal.EarningsCalendar> earingsCalInDb, Earningscalendar[] earningscalendars1)
+    private async Task UpdateExistingRecords(IEnumerable<EarningsCalendar> earingsCalInDb, Earningscalendar[] earningscalendars1)
     {
         foreach (var ecInDb in earingsCalInDb)
         {
@@ -149,4 +214,31 @@ public class EarningsCalToDb
         }
         await ecRepository.Update(earingsCalInDb);
     }
+
+    private async Task<IEnumerable<EarningsCalendar>?> UpdateExistingRecords(List<YahooEarningCal> yahooEarningsDates, List<string> tickersToProcess)
+    {
+        try
+        {
+            IEnumerable<EarningsCalendar> existingRecords = await ecRepository.FindAll(x => tickersToProcess.Contains(x.Ticker));
+            foreach (var ec in existingRecords)
+            {
+                var yahooDate = yahooEarningsDates.FirstOrDefault(x => x.Symbol.Equals(ec.Ticker, StringComparison.OrdinalIgnoreCase));
+                if (yahooDate == null)
+                {
+                    continue;
+                }
+                ec.EarningsDateYahoo = yahooDate.ReportingDate;
+            }
+            await ecRepository.Update(existingRecords);
+            return existingRecords;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to update dataset EarningsCalendar in method EarningsCalToDb:UpdateExistingRecords");
+            logger.LogError(ex.ToString());
+        }
+        return null;
+    }
+
+    #endregion Private Methods
 }

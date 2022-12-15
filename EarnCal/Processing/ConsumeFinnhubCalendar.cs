@@ -3,7 +3,7 @@ using ApplicationModels.EarningsCal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace EarningsCalendar.Processing;
+namespace EarnCal.Processing;
 
 public class ConsumeFinnhubCalendar
 {
@@ -34,7 +34,7 @@ public class ConsumeFinnhubCalendar
         var endDate = DateTimeOffset.UtcNow.AddDays(-1).ToString(ISODateFormat);
         urlToUse = urlToUse.Replace(@"{startDate}", startDate)
            .Replace(@"{endDate}", endDate);
-        FinnhubCal? finnhubCal = (await handleCache.GetAsync<FinnhubCal>(urlToUse, CacheDuration.Hours, 23));
+        FinnhubCal? finnhubCal = await handleCache.GetAsync<FinnhubCal>(urlToUse, CacheDuration.Hours, 23);
         if (finnhubCal == null || finnhubCal.EarningsCalendar == null || finnhubCal.EarningsCalendar.Length == 0)
         {
             logger.LogError("Vendor data was inconstant with contract");

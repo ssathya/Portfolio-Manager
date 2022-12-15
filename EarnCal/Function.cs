@@ -2,7 +2,7 @@
 using AppCommon.DatabaseHandler;
 using AppCommon.Services;
 using ApplicationModels.EarningsCal;
-using EarningsCalendar.Processing;
+using EarnCal.Processing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using PsqlAccess;
 using PsqlAccess.SecListMaintain;
 
-namespace EarningsCalendar;
+namespace EarnCal;
 
 public class Function
 {
@@ -31,6 +31,7 @@ public class Function
         logger = provider.GetService<ILogger<Function>>();
         ConsumeFinnhubCalendar? consumeFinnhubCalendar = provider.GetService<ConsumeFinnhubCalendar>();
         EarningsCalToDb? earningsCalToDb = provider.GetService<EarningsCalToDb>();
+        ConsumeYahooEc? consumeYahooEc = provider.GetService<ConsumeYahooEc>();
 
         if (logger == null)
         {
@@ -44,18 +45,26 @@ public class Function
             logger.LogError("Could not create object to get data from Finnhub");
             return;
         }
-        FinnhubCal? finnhubCal = await consumeFinnhubCalendar.GetValuesFromVendor();
         if (earningsCalToDb == null)
         {
             logger.LogError("Unable to create object EarningsCalToDb");
             return;
         }
+        if (consumeYahooEc == null)
+        {
+            logger.LogError("Unable to create ConsumeYahooEc object..");
+            return;
+        }
+        FinnhubCal? finnhubCal = await consumeFinnhubCalendar.GetValuesFromVendor();
+        List<YahooEarningCal> earningsDates = await consumeYahooEc.GetValuesFromYahoo();
         if (finnhubCal == null || finnhubCal.EarningsCalendar == null || finnhubCal.EarningsCalendar.Length == 0)
         {
             logger.LogError("Vendor (Finnhub) did not provide any data to process");
             return;
         }
-        var updateResult = await earningsCalToDb.UpdateFinnHubData(finnhubCal);
+        var updateResult1 = await earningsCalToDb.UpdateFinnHubData(finnhubCal);
+        var updateResult2 = await earningsCalToDb.UpdateYahooEarningsCal(earningsDates);
+        logger.LogInformation($"Processing was {((updateResult1 & updateResult2) ? "Success" : "Failed")}");
     }
 
     private void ConnectToDb(IServiceCollection services)
@@ -75,10 +84,11 @@ public class Function
 
     private void AppSecificSettings(IServiceCollection services)
     {
-        services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
-        services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<ConsumeFinnhubCalendar>();
+        services.AddScoped<ConsumeYahooEc>();
         services.AddScoped<EarningsCalToDb>();
         services.AddScoped<IHandleCache, HandleCache>();
+        services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
+        services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
     }
 }

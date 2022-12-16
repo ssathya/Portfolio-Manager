@@ -32,7 +32,7 @@ public class Function
         ConsumeFinnhubCalendar? consumeFinnhubCalendar = provider.GetService<ConsumeFinnhubCalendar>();
         EarningsCalToDb? earningsCalToDb = provider.GetService<EarningsCalToDb>();
         ConsumeYahooEc? consumeYahooEc = provider.GetService<ConsumeYahooEc>();
-
+        ExceptionReporting? exceptionReporting = provider.GetService<ExceptionReporting>();
         if (logger == null)
         {
             Console.WriteLine("Unable to create logger object");
@@ -55,6 +55,11 @@ public class Function
             logger.LogError("Unable to create ConsumeYahooEc object..");
             return;
         }
+        if (exceptionReporting == null)
+        {
+            logger.LogError("Unable to create ExceptionReporting object...");
+            return;
+        }
         FinnhubCal? finnhubCal = await consumeFinnhubCalendar.GetValuesFromVendor();
         List<YahooEarningCal> earningsDates = await consumeYahooEc.GetValuesFromYahoo();
         if (finnhubCal == null || finnhubCal.EarningsCalendar == null || finnhubCal.EarningsCalendar.Length == 0)
@@ -65,6 +70,8 @@ public class Function
         var updateResult1 = await earningsCalToDb.UpdateFinnHubData(finnhubCal);
         var updateResult2 = await earningsCalToDb.UpdateYahooEarningsCal(earningsDates);
         logger.LogInformation($"Processing was {((updateResult1 & updateResult2) ? "Success" : "Failed")}");
+        var exceptionReportingResult = await exceptionReporting.BuildReport();
+        logger.LogInformation($"Exception reporting {(exceptionReportingResult ? "Success" : "Failed")}");
     }
 
     private void ConnectToDb(IServiceCollection services)
@@ -87,6 +94,7 @@ public class Function
         services.AddScoped<ConsumeFinnhubCalendar>();
         services.AddScoped<ConsumeYahooEc>();
         services.AddScoped<EarningsCalToDb>();
+        services.AddScoped<ExceptionReporting>();
         services.AddScoped<IHandleCache, HandleCache>();
         services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));

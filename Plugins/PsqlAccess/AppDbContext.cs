@@ -19,7 +19,8 @@ public class AppDbContext : DbContext
     #region Public Properties
 
     public DbSet<IndexComponent> IndexComponents { get; set; }
-    public DbSet<EarningsCalendar> earningsCalendars { get; set; }
+    public DbSet<EarningsCalendar> EarningsCalendars { get; set; }
+    public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
 
     #endregion Public Properties
 

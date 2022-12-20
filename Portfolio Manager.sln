@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManageDowList", "ManageDowL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EarnCal", "EarnCal\EarnCal.csproj", "{4EB100B8-53D3-4DA4-8C48-F4837C88FF86}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EarningsReport", "EarningsReport\EarningsReport.csproj", "{57C7259F-00D7-44A7-BB2D-5CF13B757D69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{4EB100B8-53D3-4DA4-8C48-F4837C88FF86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EB100B8-53D3-4DA4-8C48-F4837C88FF86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EB100B8-53D3-4DA4-8C48-F4837C88FF86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57C7259F-00D7-44A7-BB2D-5CF13B757D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57C7259F-00D7-44A7-BB2D-5CF13B757D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57C7259F-00D7-44A7-BB2D-5CF13B757D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57C7259F-00D7-44A7-BB2D-5CF13B757D69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

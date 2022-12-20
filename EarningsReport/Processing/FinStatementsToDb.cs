@@ -1,4 +1,5 @@
-﻿using ApplicationModels.FinancialStatement;
+﻿using ApplicationModels.EarningsCal;
+using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
@@ -14,14 +15,17 @@ public class FinStatementsToDb
 {
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly IRepository<FinStatements> finStatementRepository;
+    private readonly IRepository<EarningsCalendar> ecRepository;
     private readonly ILogger<FinStatementsToDb> logger;
 
     public FinStatementsToDb(IRepository<IndexComponent> idxRepository
         , IRepository<FinStatements> finStatementRepository
+        , IRepository<EarningsCalendar> ecRepository
         , ILogger<FinStatementsToDb> logger)
     {
         this.idxRepository = idxRepository;
         this.finStatementRepository = finStatementRepository;
+        this.ecRepository = ecRepository;
         this.logger = logger;
     }
 
@@ -42,7 +46,45 @@ public class FinStatementsToDb
         {
             return false;
         }
+        bool updateResult = await UpdateEarningsCalendarAsync(finStatements);
         return true;
+    }
+
+    private async Task<bool> UpdateEarningsCalendarAsync(List<FinStatements> finStatements)
+    {
+        //1. Remove aged records
+        DateTime oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+        DateTime oneMonthAfter = DateTime.UtcNow.AddMonths(1);
+        IEnumerable<EarningsCalendar> recordsToRemove = await ecRepository.FindAll(x => x.RemoveDate <= oneMonthAgo && x.DataObtained);
+        if (recordsToRemove.Any())
+        {
+            await ecRepository.Remove(recordsToRemove);
+        }
+        //2. Update processed tickers.
+        List<string> processedTickers = finStatements.Select(x => x.Ticker)
+            .Distinct()
+            .ToList();
+        var recordsToUpdate = await ecRepository.FindAll(x => processedTickers.Contains(x.Ticker));
+        if (recordsToUpdate == null || recordsToUpdate.Count() == 0)
+        {
+            return false;
+        }
+        foreach (var record in recordsToUpdate)
+        {
+            record.DataObtained = true;
+            record.RemoveDate = oneMonthAfter;
+        }
+        try
+        {
+            await ecRepository.Update(recordsToUpdate);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Error while updating EarningsCalendar");
+            logger.LogError($"{ex.Message}");
+            return false;
+        }
     }
 
     private async Task<bool> AddNewRecordsToDb(List<FinStatements> finStatements)
@@ -71,7 +113,10 @@ public class FinStatementsToDb
             foreach (var droppedTicker in tickersToRemove)
             {
                 var dropRecords = await finStatementRepository.FindAll(x => x.Ticker == droppedTicker);
-                await finStatementRepository.Remove(dropRecords);
+                if (dropRecords.Any())
+                {
+                    await finStatementRepository.Remove(dropRecords);
+                }
             }
             return true;
         }

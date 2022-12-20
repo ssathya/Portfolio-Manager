@@ -18,15 +18,17 @@ public class GetFinancialStatements
     private const int YearCount = 3;
     private readonly ILogger<GetFinancialStatements> logger;
     private readonly IMapper mapper;
-    private readonly IRepository<EarningsCalendar> repository;
+    private readonly IRepository<EarningsCalendar> ecRepository;
 
     #endregion Private Fields
 
     #region Public Constructors
 
-    public GetFinancialStatements(IRepository<EarningsCalendar> repository, ILogger<GetFinancialStatements> logger, IMapper mapper)
+    public GetFinancialStatements(IRepository<EarningsCalendar> ecRepository
+        , ILogger<GetFinancialStatements> logger
+        , IMapper mapper)
     {
-        this.repository = repository;
+        this.ecRepository = ecRepository;
         this.logger = logger;
         this.mapper = mapper;
         SecRequestManager.Instance.UserAgent = "Adept/4.1.0";
@@ -58,7 +60,6 @@ public class GetFinancialStatements
         {
             return finStatements;
         }
-        bool updateResult = await UpdateEarningsCalendarAsync(processedTickers);
         return finStatements;
     }
 
@@ -152,7 +153,7 @@ public class GetFinancialStatements
     {
         try
         {
-            var ecRecords = (await repository.FindAll(x => x.DataObtained == false))
+            var ecRecords = (await ecRepository.FindAll(x => x.DataObtained == false))
                 .OrderBy(x => x.VendorEarningsDate)
                 .ThenBy(x => x.EarningsDateYahoo)
                 .Take(MaxNumberOfCalls)
@@ -165,30 +166,6 @@ public class GetFinancialStatements
             logger.LogError($"{ex.Message}", ex);
             return new List<EarningsCalendar>();
         }
-    }
-
-    private async Task<bool> UpdateEarningsCalendarAsync(List<string> processedTickers)
-    {
-        var recordsToUpdate = await repository.FindAll(x => processedTickers.Contains(x.Ticker));
-        if (recordsToUpdate == null || recordsToUpdate.Count() < processedTickers.Count)
-        {
-            return false;
-        }
-        foreach (var record in recordsToUpdate)
-        {
-            record.DataObtained = true;
-        }
-        try
-        {
-            await repository.Update(recordsToUpdate);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Error while updating EarningsCalendar");
-            logger.LogError(ex.ToString());
-            return false;
-        }
-        return true;
     }
 
     #endregion Private Methods

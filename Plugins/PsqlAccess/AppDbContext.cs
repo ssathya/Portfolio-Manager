@@ -1,4 +1,5 @@
 ﻿using ApplicationModels.EarningsCal;
+using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<IndexComponent> IndexComponents { get; set; }
     public DbSet<EarningsCalendar> EarningsCalendars { get; set; }
     public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
+    public DbSet<FinStatements> FinStatements { get; set; }
 
     #endregion Public Properties
 

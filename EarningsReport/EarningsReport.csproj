@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+			<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+			<PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
+	<PackageReference Include="SecuritiesExchangeCommission.Edgar" Version="6.3.2" />
+		<PackageReference Include="Xbrl" Version="5.2.0" />
+	  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AppCommon\AppCommon.csproj" />
+		<ProjectReference Include="..\ApplicationModels\ApplicationModels.csproj" />
+		<ProjectReference Include="..\Plugins\PsqlAccess\PsqlAccess.csproj" />
+	</ItemGroup>
+
+</Project>

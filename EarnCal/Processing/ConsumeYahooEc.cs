@@ -3,7 +3,6 @@ using ApplicationModels.Indexes;
 using CosminSanda.Finance.Records;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
-using CosminSanda.Finance;
 
 namespace EarnCal.Processing;
 
@@ -11,7 +10,7 @@ public class ConsumeYahooEc
 {
     private readonly ILogger<ConsumeYahooEc> logger;
     private readonly IRepository<IndexComponent> idxRepository;
-    private readonly IRepository<ApplicationModels.EarningsCal.EarningsCalendar> ecRepository;
+    private readonly IRepository<EarningsCalendar> ecRepository;
     private const int MaxNumberOfCalls = 20;
 
     public ConsumeYahooEc(ILogger<ConsumeYahooEc> logger

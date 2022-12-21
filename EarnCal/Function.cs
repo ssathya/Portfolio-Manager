@@ -95,6 +95,7 @@ public class Function
         services.AddScoped<ConsumeYahooEc>();
         services.AddScoped<EarningsCalToDb>();
         services.AddScoped<ExceptionReporting>();
+        services.AddScoped<ReadYahooValues>();
         services.AddScoped<IHandleCache, HandleCache>();
         services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));

@@ -1,6 +1,5 @@
 ﻿using ApplicationModels.EarningsCal;
 using ApplicationModels.Indexes;
-using CosminSanda.Finance.Records;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
 
@@ -11,15 +10,19 @@ public class ConsumeYahooEc
     private readonly ILogger<ConsumeYahooEc> logger;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly IRepository<EarningsCalendar> ecRepository;
+    private readonly ReadYahooValues readYahooValues;
     private const int MaxNumberOfCalls = 20;
+    private readonly DateTime defaultDt = new DateTime(1900, 1, 1).ToUniversalTime();
 
     public ConsumeYahooEc(ILogger<ConsumeYahooEc> logger
         , IRepository<IndexComponent> idxRepository
-        , IRepository<ApplicationModels.EarningsCal.EarningsCalendar> ecRepository)
+        , IRepository<ApplicationModels.EarningsCal.EarningsCalendar> ecRepository
+        , ReadYahooValues readYahooValues)
     {
         this.logger = logger;
         this.idxRepository = idxRepository;
         this.ecRepository = ecRepository;
+        this.readYahooValues = readYahooValues;
     }
 
     public async Task<List<YahooEarningCal>> GetValuesFromYahoo()
@@ -27,7 +30,7 @@ public class ConsumeYahooEc
         List<string> tickersProcessed = (await ecRepository.FindAll())
             .Where(x => x.DataObtained == true)
             .Select(x => x.Ticker).ToList();
-        Random rng = new Random();
+        Random rng = new();
         List<string> tickersToProcess = (await idxRepository
                 .FindAll(x => !tickersProcessed.Contains(x.Ticker)))
             .Select(x => x.Ticker)
@@ -37,19 +40,20 @@ public class ConsumeYahooEc
         List<YahooEarningCal> earningsDates = new();
         foreach (var ticker in tickersToProcess)
         {
-            var earnings = await CosminSanda.Finance.EarningsCalendar.GetPastEarningsDates(ticker);
-            if (earnings != null && earnings.Count > 0)
+            if (string.IsNullOrWhiteSpace(ticker))
             {
-                var lastEarningDt = earnings.Last();
-                earningsDates.Add(new YahooEarningCal
-                {
-                    Symbol = ticker,
-                    ReportingDate = new DateTime(lastEarningDt.Date.Year
-                    , lastEarningDt.Date.Month
-                    , lastEarningDt.Date.Day)
-                    .ToUniversalTime()
-                });
+                continue;
             }
+            DateTime earningsDate = await readYahooValues.GetValuesFromWeb(ticker);
+            if (earningsDate.Equals(defaultDt))
+            {
+                continue;
+            }
+            earningsDates.Add(new YahooEarningCal
+            {
+                Symbol = ticker,
+                ReportingDate = earningsDate
+            });
         }
         return earningsDates;
     }

@@ -53,8 +53,9 @@ public class FinStatementsToDb
     private async Task<bool> UpdateEarningsCalendarAsync(List<FinStatements> finStatements)
     {
         //1. Remove aged records
-        DateTime oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+        DateTime oneMonthAgo = DateTime.UtcNow.Date.AddMonths(-1);
         DateTime oneMonthAfter = DateTime.UtcNow.AddMonths(1);
+        DateTime today = DateTime.UtcNow.Date;
         IEnumerable<EarningsCalendar> recordsToRemove = await ecRepository.FindAll(x => x.RemoveDate <= oneMonthAgo && x.DataObtained);
         if (recordsToRemove.Any())
         {
@@ -73,6 +74,7 @@ public class FinStatementsToDb
         {
             record.DataObtained = true;
             record.RemoveDate = oneMonthAfter;
+            record.EarningsReadDate = today;
         }
         try
         {

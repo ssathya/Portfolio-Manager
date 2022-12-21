@@ -37,7 +37,7 @@ public class ConsumeYahooEc
         List<YahooEarningCal> earningsDates = new();
         foreach (var ticker in tickersToProcess)
         {
-            List<EarningsDate> earnings = await CosminSanda.Finance.EarningsCalendar.GetPastEarningsDates(ticker);
+            var earnings = await CosminSanda.Finance.EarningsCalendar.GetPastEarningsDates(ticker);
             if (earnings != null && earnings.Count > 0)
             {
                 var lastEarningDt = earnings.Last();

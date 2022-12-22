@@ -129,7 +129,18 @@ public class GetFinancialStatements
     private async Task<List<FinStatements>> GetFinancialAsync(string ticker)
     {
         List<FinStatements> finStatements = new();
-        EdgarSearch edgarSearch = await EdgarSearch.CreateAsync(ticker, "10-K");
+
+        EdgarSearch edgarSearch;
+        try
+        {
+            edgarSearch = await EdgarSearch.CreateAsync(ticker, "10-K");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Error occurred while trying to retrieve list of 10-K filings for {ticker}");
+            logger.LogError(ex.Message);
+            return finStatements;
+        }
         int availableYears = Math.Min(YearCount, edgarSearch.Results.Length);
         logger.LogInformation($"Going to obtain {availableYears} 10-K records for {ticker}");
         finStatements.AddRange(await ExtractValuesAsync(edgarSearch, availableYears, ticker, "10-K"));
@@ -137,7 +148,16 @@ public class GetFinancialStatements
         {
             return finStatements;
         }
-        edgarSearch = await EdgarSearch.CreateAsync(ticker, "10-Q");
+        try
+        {
+            edgarSearch = await EdgarSearch.CreateAsync(ticker, "10-Q");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Error occurred while trying to retrieve list of 10-Q filings for {ticker}");
+            logger.LogError(ex.Message);
+            return finStatements;
+        }
         int requiredQuarters = Math.Min(QuarterCount, edgarSearch.Results.Length);
         logger.LogInformation($"Going to obtain {requiredQuarters} 10-Q records for {ticker}");
         var extractResult = await ExtractValuesAsync(edgarSearch, requiredQuarters, ticker, "10-Q");

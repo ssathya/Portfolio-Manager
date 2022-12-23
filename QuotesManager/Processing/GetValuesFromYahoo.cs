@@ -46,15 +46,15 @@ public class GetValuesFromYahoo
 
     #region Public Methods
 
-    public async Task<bool> ExecAsync()
+    public async Task<List<YahooQuote>> ExecAsync()
     {
+        List<YahooQuote> yahooQuotes = new();
         List<string>? tickers = await ObtainTickersToProcess();
         if (tickers == null || tickers.Count == 0)
         {
-            return false;
+            return yahooQuotes;
         }
         Stopwatch stopWatch = new();
-        List<YahooQuote> yahooQuotes = new();
         stopWatch.Reset();
         stopWatch.Start();
         for (int i = 0; i < tickers.Count; i++)
@@ -76,7 +76,7 @@ public class GetValuesFromYahoo
                 stopWatch.Start();
             }
         }
-        return true;
+        return yahooQuotes;
     }
 
     #endregion Public Methods
@@ -123,7 +123,7 @@ public class GetValuesFromYahoo
                 quotes.Add(new YahooQuote
                 {
                     Ticker = ticker,
-                    Date = csvReader.GetField<DateTime>("Date"),
+                    Date = csvReader.GetField<DateTime>("Date").ToUniversalTime(),
                     Open = csvReader.GetField<decimal>("Open"),
                     High = csvReader.GetField<decimal>("High"),
                     Low = csvReader.GetField<decimal>("Low"),

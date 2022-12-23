@@ -33,6 +33,11 @@ public class IndexComponent : Entity
 
         SubSector = whiteChars.Replace(SubSector, string.Empty).Trim();
         SubSector = htmlAmpToReadAmp.Replace(SubSector, Ampersand);
+
+        string pattern = @"\.";
+        string substitution = @"-";
+        Regex regex = new Regex(pattern, options);
+        Ticker = regex.Replace(Ticker, substitution);
     }
 
     #endregion Public Methods

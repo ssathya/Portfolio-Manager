@@ -21,6 +21,7 @@ public class GetValuesFromYahoo
     private readonly ILogger<GetValuesFromYahoo> logger;
     private readonly IRepository<IndexComponent> repository;
     private readonly int start;
+    private readonly int batchSize = 30;
 
     #endregion Private Fields
 
@@ -61,7 +62,7 @@ public class GetValuesFromYahoo
         {
             string? ticker = tickers[i];
             yahooQuotes.AddRange(await GetHistoricPricesForTicker(ticker));
-            if (i % 10 == 0 && i != 0)
+            if (i % batchSize == 0 && i != 0)
             {
                 logger.LogInformation($"Last ticker processed {ticker}");
                 stopWatch.Stop();
@@ -146,6 +147,7 @@ public class GetValuesFromYahoo
         try
         {
             var tickers = (await repository.FindAll())
+                .OrderBy(x => x.Ticker)
                 .Select(r => r.Ticker)
                 .ToList();
             return tickers;

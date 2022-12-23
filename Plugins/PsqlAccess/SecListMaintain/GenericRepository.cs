@@ -1,4 +1,5 @@
 ﻿using ApplicationModels;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq.Expressions;
@@ -36,8 +37,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         using AppDbContext dbCondext = await contextFactory.CreateDbContextAsync();
         try
         {
-            await dbCondext.AddRangeAsync(entities);
-            await dbCondext.SaveChangesAsync();
+            using var transaction = dbCondext.Database.BeginTransaction();
+            var entities1 = entities.ToList();
+            var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 4000 };
+            await dbCondext.BulkInsertAsync<T>(entities1, bulkConfig);
+            transaction.Commit();
+            //await dbCondext.AddRangeAsync(entities);
+            //await dbCondext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -111,10 +117,15 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         var ids = entities.Select(x => x.Id).ToList();
         try
         {
-            await appDbConext.Set<T>()
-                .Where(x => ids.Contains(x.Id))
-                .ExecuteDeleteAsync();
-            await appDbConext.SaveChangesAsync();
+            using var transaction = appDbConext.Database.BeginTransaction();
+            var entities1 = entities.ToList();
+            var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 4000 };
+            await appDbConext.BulkDeleteAsync<T>(entities1, bulkConfig);
+            transaction.Commit();
+            //await appDbConext.Set<T>()
+            //    .Where(x => ids.Contains(x.Id))
+            //    .ExecuteDeleteAsync();
+            //await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {
@@ -134,6 +145,22 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         catch (Exception ex)
         {
             logger.LogError("Error in deleting values from database ");
+            logger.LogError(ex.Message);
+        }
+    }
+
+    public async Task Truncate()
+    {
+        using AppDbContext appDbConext = await contextFactory.CreateDbContextAsync();
+        try
+        {
+            using var transaction = appDbConext.Database.BeginTransaction();
+            await appDbConext.TruncateAsync<T>();
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Error in truncating values in database ");
             logger.LogError(ex.Message);
         }
     }
@@ -158,8 +185,13 @@ public class GenericRepository<T> : IRepository<T> where T : Entity
         using AppDbContext appDbConext = await contextFactory.CreateDbContextAsync();
         try
         {
-            appDbConext.UpdateRange(entities);
-            await appDbConext.SaveChangesAsync();
+            using var transaction = appDbConext.Database.BeginTransaction();
+            var entities1 = entities.ToList();
+            var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 4000 };
+            await appDbConext.BulkUpdateAsync(entities1, bulkConfig);
+            transaction.Commit();
+            //appDbConext.UpdateRange(entities);
+            //await appDbConext.SaveChangesAsync();
         }
         catch (Exception ex)
         {

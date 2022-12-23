@@ -21,6 +21,8 @@ public interface IRepository<T> where T : Entity
 
     Task Remove(int id);
 
+    Task Truncate();
+
     Task Update(T entity);
 
     Task Update(IEnumerable<T> entities);

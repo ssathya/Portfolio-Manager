@@ -7,20 +7,20 @@ namespace QuotesManager.Processing;
 
 public class QuotesDbProcessing
 {
-    private readonly IRepository<YQuotes> yRepository;
-    private readonly IMapper mapper;
+    //private readonly IRepository<YQuotes> yRepository;
+    private readonly IRepository<YPrice> ypRepository;
+
     private readonly ILogger<QuotesDbProcessing> logger;
 
-    public QuotesDbProcessing(IRepository<YQuotes> yRepository
-        , IMapper mapper
+    public QuotesDbProcessing(
+          IRepository<YPrice> ypRepository
         , ILogger<QuotesDbProcessing> logger)
     {
-        this.yRepository = yRepository;
-        this.mapper = mapper;
+        this.ypRepository = ypRepository;
         this.logger = logger;
     }
 
-    public async Task<bool> ExecAsync(List<YahooQuote> yahooQuotes)
+    public async Task<bool> ExecAsync(List<YPrice> yahooQuotes)
     {
         bool execResult = await RemoveOldEntiresAsync();
         if (!execResult)
@@ -31,12 +31,12 @@ public class QuotesDbProcessing
         return execResult;
     }
 
-    private async Task<bool> StoreQuotesInDb(List<YahooQuote> yahooQuotes)
+    private async Task<bool> StoreQuotesInDb(List<YPrice> yahooQuotes)
     {
         try
         {
-            List<YQuotes> quotes = mapper.Map<List<YQuotes>>(yahooQuotes);
-            await yRepository.Add(quotes);
+            //List<YQuotes> quotes = mapper.Map<List<YQuotes>>(yahooQuotes);
+            await ypRepository.Add(yahooQuotes);
             return true;
         }
         catch (Exception ex)
@@ -51,7 +51,7 @@ public class QuotesDbProcessing
     {
         try
         {
-            await yRepository.Truncate();
+            await ypRepository.Truncate();
             return true;
         }
         catch (Exception ex)

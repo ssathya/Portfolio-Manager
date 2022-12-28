@@ -47,7 +47,7 @@ public class FunctionHandler
             logger.LogCritical("Unable to create object QuotesDbProcessing");
             return;
         }
-        List<YahooQuote> quotes = await getValuesFromYahoo.ExecAsync();
+        List<YPrice> quotes = await getValuesFromYahoo.ExecAsync();
         if (quotes == null || quotes.Count == 0)
         {
             logger.LogCritical("Unable to obtain quotes from Yahoo");

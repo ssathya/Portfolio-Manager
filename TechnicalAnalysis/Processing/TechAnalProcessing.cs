@@ -11,19 +11,20 @@ public class TechAnalProcessing
     #region Private Fields
 
     private const int ApproxWorkingDaysInAYear = 252;
-    private const int BatchSize = 20;
+    private const int BatchSize = 100;
     private const int MomentumWindow = 125;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
     private readonly IRepository<Momentum> momRepository;
     private readonly List<decimal> xAxis = new();
-    private readonly IRepository<YQuotes> yRepository;
+    private readonly IRepository<YPrice> yRepository;
+    private List<YPrice> yPrices = new();
 
     #endregion Private Fields
 
     #region Public Constructors
 
-    public TechAnalProcessing(IRepository<YQuotes> yRepository
+    public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
         , IRepository<Momentum> momRepository
         , ILogger<TechAnalProcessing> logger)
@@ -54,9 +55,13 @@ public class TechAnalProcessing
         int counter = 0;
         foreach (var ticker in tickers)
         {
-            List<YQuotes>? yQuotes = await ObtainQuotesForTicker(ticker);
-            if (yQuotes == null || yQuotes.Count == 0) { continue; }
-            Momentum momentumsForTicker = ComputeMomentum(yQuotes);
+            List<CompressedQuote> yQuotes = await ObtainQuotesForTicker(ticker);
+            if (yQuotes == null || yQuotes.Count == 0)
+            {
+                logger.LogInformation($"Could not prices for {ticker}");
+                continue;
+            }
+            Momentum momentumsForTicker = ComputeMomentum(yQuotes, ticker);
             if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
             {
                 momentum.Add(momentumsForTicker);
@@ -83,14 +88,14 @@ public class TechAnalProcessing
 
     #region Private Methods
 
-    private Momentum ComputeMomentum(List<YQuotes> yQuotes)
+    private Momentum ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
     {
         Momentum momentumValues = new();
         if (yQuotes.Count < MomentumWindow)
         {
             return momentumValues;
         }
-        string ticker = yQuotes.First().Ticker;
+
         momentumValues.Ticker = ticker;
         yQuotes.Sort((a, b) => a.Date.CompareTo(b.Date));
 
@@ -102,7 +107,7 @@ public class TechAnalProcessing
             var closingPrices = yQuotes
                 .Skip(iterator++)
                 .Take(MomentumWindow)
-                .Select(x => (Decimal)(Math.Log((double)x.Close)))
+                .Select(x => (Decimal)(Math.Log((double)x.ClosingPrice)))
                 .ToArray();
             (decimal rSquared, decimal yIntercept, decimal slope) =
                 LinearRegression.LinRegression(xAxis.ToArray(), closingPrices);
@@ -118,19 +123,28 @@ public class TechAnalProcessing
         return momentumValues;
     }
 
-    private async Task<List<YQuotes>?> ObtainQuotesForTicker(string ticker)
+    private async Task<List<CompressedQuote>> ObtainQuotesForTicker(string ticker)
     {
         try
         {
-            var yQuotes = (await yRepository.FindAll(x => x.Ticker == ticker))
-                .ToList();
-            return yQuotes;
+            if (yPrices.Count == 0)
+            {
+                yPrices = (await yRepository.FindAll())
+                    .ToList();
+            }
+            YPrice? yPrice = yPrices.FindAll(x => x.Ticker == ticker)
+                .FirstOrDefault();
+            if (yPrice == null)
+            {
+                return new List<CompressedQuote>();
+            }
+            return yPrice.CompressedQuotes;
         }
         catch (Exception ex)
         {
             logger.LogError("Exception while retrieving Quotes ObtainQuotesForTicker");
             logger.LogError($"{ex.Message}");
-            return null;
+            return new List<CompressedQuote>();
         }
     }
 

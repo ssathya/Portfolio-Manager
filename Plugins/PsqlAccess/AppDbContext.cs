@@ -25,8 +25,8 @@ public class AppDbContext : DbContext
     public DbSet<EarningsCalendar> EarningsCalendars { get; set; }
     public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
     public DbSet<FinStatements> FinStatements { get; set; }
-    public DbSet<YQuotes> YQuotes { get; set; }
     public DbSet<Momentum> Momentums { get; set; }
+    public DbSet<YPrice> YPrices { get; set; }
 
     #endregion Public Properties
 
@@ -35,14 +35,14 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseSerialColumns();
-        modelBuilder.Entity<YQuotes>()
-            .HasIndex(p => p.Ticker);
         modelBuilder.Entity<Momentum>()
             .HasIndex(p => p.Ticker);
         //modelBuilder.Entity<Momentum>().OwnsMany(p => p.ComputedValues, options =>
         //{
         //    options.ToJson();
         //});
+        modelBuilder.Entity<YPrice>()
+            .HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

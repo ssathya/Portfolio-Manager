@@ -11,7 +11,7 @@ public class TechAnalProcessing
     #region Private Fields
 
     private const int ApproxWorkingDaysInAYear = 252;
-    private const int BatchSize = 20;
+    private const int BatchSize = 100;
     private const int MomentumWindow = 125;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;

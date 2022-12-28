@@ -1,4 +1,5 @@
-﻿using ApplicationModels.EarningsCal;
+﻿using ApplicationModels.Compute;
+using ApplicationModels.EarningsCal;
 using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
@@ -25,6 +26,7 @@ public class AppDbContext : DbContext
     public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
     public DbSet<FinStatements> FinStatements { get; set; }
     public DbSet<YQuotes> YQuotes { get; set; }
+    public DbSet<Momentum> Momentums { get; set; }
 
     #endregion Public Properties
 
@@ -35,6 +37,12 @@ public class AppDbContext : DbContext
         modelBuilder.UseSerialColumns();
         modelBuilder.Entity<YQuotes>()
             .HasIndex(p => p.Ticker);
+        modelBuilder.Entity<Momentum>()
+            .HasIndex(p => p.Ticker);
+        //modelBuilder.Entity<Momentum>().OwnsMany(p => p.ComputedValues, options =>
+        //{
+        //    options.ToJson();
+        //});
     }
 
     #endregion Protected Methods

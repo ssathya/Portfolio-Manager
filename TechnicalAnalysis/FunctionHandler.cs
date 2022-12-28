@@ -1,23 +1,21 @@
-﻿using AppCommon.CacheHandler;
-using AppCommon.DatabaseHandler;
+﻿using AppCommon.DatabaseHandler;
 using AppCommon.Services;
-using ApplicationModels.Quotes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
 using PsqlAccess.SecListMaintain;
-using QuotesManager.Processing;
+using TechnicalAnalysis.Processing;
 
-namespace QuotesManager;
+namespace TechnicalAnalysis;
 
 public class FunctionHandler
 {
-    private const string ApplicationName = "ObtainHistoricPrice";
+    private const string ApplicationName = "Compute";
     private ILogger<FunctionHandler>? logger;
 
-    public async Task ExecAsync()
+    public async Task ExcecAsync()
     {
         await DoApplicationProcessingAsync();
     }
@@ -27,34 +25,21 @@ public class FunctionHandler
         IServiceCollection services = ServiceHandler.ConfigureServices(ApplicationName);
         AppSpecificSettings(services);
         ConnectToDb(services);
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         ServiceProvider provider = services.BuildServiceProvider();
         logger = provider.GetService<ILogger<FunctionHandler>>();
-        GetValuesFromYahoo? getValuesFromYahoo = provider.GetService<GetValuesFromYahoo>();
-        QuotesDbProcessing? quotesDbProcessing = provider.GetService<QuotesDbProcessing>();
+        TechAnalProcessing? techAnalProcessing = provider.GetService<TechAnalProcessing>();
         if (logger == null)
         {
             Console.WriteLine("Unable to create logger object");
             return;
         }
-        if (getValuesFromYahoo == null)
+        if (techAnalProcessing == null)
         {
-            logger.LogCritical("Unable to create object GetValuesFromYahoo");
+            logger.LogError("Could not create object TechAnalProcessing");
             return;
         }
-        if (quotesDbProcessing == null)
-        {
-            logger.LogCritical("Unable to create object QuotesDbProcessing");
-            return;
-        }
-        List<YahooQuote> quotes = await getValuesFromYahoo.ExecAsync();
-        if (quotes == null || quotes.Count == 0)
-        {
-            logger.LogCritical("Unable to obtain quotes from Yahoo");
-            return;
-        }
-        var updateResult = await quotesDbProcessing.ExecAsync(quotes);
-        logger.LogInformation($"Getting quotes {(updateResult ? "success" : "failed")}");
+        await techAnalProcessing.ExecAsync();
+        return;
     }
 
     private void ConnectToDb(IServiceCollection services)
@@ -76,8 +61,6 @@ public class FunctionHandler
     {
         services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
-        services.AddScoped<IHandleCache, HandleCache>();
-        services.AddScoped<GetValuesFromYahoo>();
-        services.AddScoped<QuotesDbProcessing>();
+        services.AddScoped<TechAnalProcessing>();
     }
 }

@@ -47,21 +47,21 @@ public class GetValuesFromYahoo
 
     #region Public Methods
 
-    public async Task<List<YahooQuote>> ExecAsync()
+    public async Task<List<YPrice>> ExecAsync()
     {
-        List<YahooQuote> yahooQuotes = new();
+        List<YPrice> yPrices = new();
         List<string>? tickers = await ObtainTickersToProcess();
         if (tickers == null || tickers.Count == 0)
         {
-            return yahooQuotes;
+            return yPrices;
         }
         Stopwatch stopWatch = new();
         stopWatch.Reset();
         stopWatch.Start();
         for (int i = 0; i < tickers.Count; i++)
         {
-            string? ticker = tickers[i];
-            yahooQuotes.AddRange(await GetHistoricPricesForTicker(ticker));
+            string ticker = tickers[i];
+            yPrices.Add(await GetHistoricPricesForTicker(ticker));
             if (i % batchSize == 0 && i != 0)
             {
                 logger.LogInformation($"Last ticker processed {ticker}");
@@ -77,20 +77,20 @@ public class GetValuesFromYahoo
                 stopWatch.Start();
             }
         }
-        return yahooQuotes;
+        return yPrices;
     }
 
     #endregion Public Methods
 
     #region Private Methods
 
-    private async Task<IEnumerable<YahooQuote>> GetHistoricPricesForTicker(string ticker)
+    private async Task<YPrice> GetHistoricPricesForTicker(string ticker)
     {
         string? urlToUse = configuration[Vendor];
         if (urlToUse == null)
         {
             logger.LogError("Could not find URL to obtain data from Yahoo....");
-            return new List<YahooQuote>();
+            return new YPrice();
         }
         urlToUse = urlToUse.Replace("{ticker}", ticker)
             .Replace("{start}", start.ToString())
@@ -104,31 +104,31 @@ public class GetValuesFromYahoo
         {
             logger.LogError("Error while getting values from Yahoo...");
             logger.LogError($"{ex.Message}");
-            return new List<YahooQuote>();
+            return new YPrice();
         }
         if (string.IsNullOrEmpty(values))
         {
             logger.LogError("Could not obtain data from Yahoo....");
             logger.LogError($"URL used: {urlToUse}");
-            return new List<YahooQuote>();
+            return new YPrice();
         }
         using StringReader quotesAsStream = new(values ?? "");
         using var csvReader = new CsvHelper.CsvReader(quotesAsStream, CultureInfo.InvariantCulture);
         _ = await csvReader.ReadAsync();
         _ = csvReader.ReadHeader();
-        List<YahooQuote> quotes = new();
+        YPrice quotes = new()
+        {
+            Ticker = ticker,
+            UpdateDate = DateTime.UtcNow
+        };
         try
         {
             while (await csvReader.ReadAsync())
             {
-                quotes.Add(new YahooQuote
+                quotes.CompressedQuotes.Add(new()
                 {
-                    Ticker = ticker,
                     Date = csvReader.GetField<DateTime>("Date").ToUniversalTime(),
-                    Open = csvReader.GetField<decimal>("Open"),
-                    High = csvReader.GetField<decimal>("High"),
-                    Low = csvReader.GetField<decimal>("Low"),
-                    Close = csvReader.GetField<decimal>("Adj Close"),
+                    ClosingPrice = csvReader.GetField<decimal>("Adj Close"),
                     Volume = csvReader.GetField<int>("Volume")
                 });
             }

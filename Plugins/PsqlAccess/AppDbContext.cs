@@ -27,6 +27,7 @@ public class AppDbContext : DbContext
     public DbSet<FinStatements> FinStatements { get; set; }
     public DbSet<YQuotes> YQuotes { get; set; }
     public DbSet<Momentum> Momentums { get; set; }
+    public DbSet<YPrice> YPrices { get; set; }
 
     #endregion Public Properties
 
@@ -43,6 +44,8 @@ public class AppDbContext : DbContext
         //{
         //    options.ToJson();
         //});
+        modelBuilder.Entity<YPrice>()
+            .HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

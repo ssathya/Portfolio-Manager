@@ -128,6 +128,9 @@ public class GetValuesFromYahoo
                 quotes.CompressedQuotes.Add(new()
                 {
                     Date = csvReader.GetField<DateTime>("Date").ToUniversalTime(),
+                    Open = csvReader.GetField<decimal>("Open"),
+                    High = csvReader.GetField<decimal>("High"),
+                    Low = csvReader.GetField<decimal>("Low"),
                     ClosingPrice = csvReader.GetField<decimal>("Adj Close"),
                     Volume = csvReader.GetField<int>("Volume")
                 });

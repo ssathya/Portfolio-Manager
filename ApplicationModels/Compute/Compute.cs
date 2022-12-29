@@ -2,7 +2,7 @@
 
 namespace ApplicationModels.Compute;
 
-public class Momentum : Entity
+public class Compute : Entity
 {
     public string Ticker { get; set; } = string.Empty;
 

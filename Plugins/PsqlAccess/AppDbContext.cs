@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<EarningsCalendar> EarningsCalendars { get; set; }
     public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
     public DbSet<FinStatements> FinStatements { get; set; }
-    public DbSet<Momentum> Momentums { get; set; }
+    public DbSet<Compute> Computes { get; set; }
     public DbSet<YPrice> YPrices { get; set; }
 
     #endregion Public Properties
@@ -35,7 +35,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseSerialColumns();
-        modelBuilder.Entity<Momentum>()
+        modelBuilder.Entity<Compute>()
             .HasIndex(p => p.Ticker);
         //modelBuilder.Entity<Momentum>().OwnsMany(p => p.ComputedValues, options =>
         //{

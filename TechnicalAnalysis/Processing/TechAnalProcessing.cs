@@ -15,7 +15,7 @@ public class TechAnalProcessing
     private const int MomentumWindow = 125;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
-    private readonly IRepository<Momentum> momRepository;
+    private readonly IRepository<Compute> computeRepository;
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
@@ -26,12 +26,12 @@ public class TechAnalProcessing
 
     public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
-        , IRepository<Momentum> momRepository
+        , IRepository<Compute> computeRepository
         , ILogger<TechAnalProcessing> logger)
     {
         this.yRepository = yRepository;
         this.idxRepository = idxRepository;
-        this.momRepository = momRepository;
+        this.computeRepository = computeRepository;
         this.logger = logger;
         for (int i = 1; i <= MomentumWindow; i++)
         {
@@ -50,8 +50,8 @@ public class TechAnalProcessing
         {
             return false;
         }
-        await momRepository.Truncate();
-        List<Momentum> momentum = new();
+        await computeRepository.Truncate();
+        List<Compute> momentum = new();
         int counter = 0;
         foreach (var ticker in tickers)
         {
@@ -61,7 +61,7 @@ public class TechAnalProcessing
                 logger.LogInformation($"Could not prices for {ticker}");
                 continue;
             }
-            Momentum momentumsForTicker = ComputeMomentum(yQuotes, ticker);
+            Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
             if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
             {
                 momentum.Add(momentumsForTicker);
@@ -88,9 +88,9 @@ public class TechAnalProcessing
 
     #region Private Methods
 
-    private Momentum ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
+    private Compute ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
     {
-        Momentum momentumValues = new();
+        Compute momentumValues = new();
         if (yQuotes.Count < MomentumWindow)
         {
             return momentumValues;
@@ -167,11 +167,11 @@ public class TechAnalProcessing
         }
     }
 
-    private async Task SaveValuesToDatabase(List<Momentum> momentum)
+    private async Task SaveValuesToDatabase(List<Compute> momentum)
     {
         try
         {
-            await momRepository.Add(momentum);
+            await computeRepository.Add(momentum);
         }
         catch (Exception ex)
         {

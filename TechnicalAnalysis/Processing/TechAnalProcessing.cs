@@ -13,9 +13,10 @@ public class TechAnalProcessing
     private const int ApproxWorkingDaysInAYear = 252;
     private const int BatchSize = 100;
     private const int MomentumWindow = 125;
+    private const int MoneyFlowOffset = 14;
+    private readonly IRepository<Compute> computeRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
-    private readonly IRepository<Compute> computeRepository;
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
@@ -64,6 +65,7 @@ public class TechAnalProcessing
             Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
             if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
             {
+                ComputeMoneyFlow(yQuotes, momentumsForTicker);
                 momentum.Add(momentumsForTicker);
                 counter++;
             }
@@ -87,6 +89,55 @@ public class TechAnalProcessing
     #endregion Public Methods
 
     #region Private Methods
+
+    private static void ComputeMoneyFlow(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
+    {
+        yQuotes.Sort((a, b) => a.Date.CompareTo(b.Date));
+        int iterator = MoneyFlowOffset;
+        List<decimal> lows = new(); List<decimal> highs = new(); List<decimal> closes = new();
+        List<long> volumes = new();
+        while (iterator + MomentumWindow < yQuotes.Count)
+        {
+            lows = yQuotes.Select(x => x.Low)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            highs = yQuotes.Select(x => x.High)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            closes = yQuotes.Select(x => x.ClosingPrice)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            volumes = yQuotes.Select(x => x.Volume)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            List<decimal> typicalPrices = new();
+            for (int i = 0; i < lows.Count; i++)
+            {
+                typicalPrices.Add((lows[i] + highs[i] + closes[i]) * volumes[i] / 3);
+            }
+            decimal positiveMoneyFlow = 0M;
+            decimal negativeMoneyFlow = 0M;
+            for (int i = 1; i < typicalPrices.Count; i++)
+            {
+                if (typicalPrices[i] > typicalPrices[i - 1])
+                {
+                    positiveMoneyFlow += typicalPrices[i];
+                }
+                else
+                {
+                    negativeMoneyFlow += typicalPrices[i];
+                }
+            }
+            decimal moneyRatio = positiveMoneyFlow / negativeMoneyFlow;
+            decimal moneyRatioPercent = 100 - (100 / (1 + moneyRatio));
+            momentumsForTicker.ComputedValues[iterator].MoneyFlow = moneyRatioPercent;
+            iterator++;
+        }
+    }
 
     private Compute ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
     {

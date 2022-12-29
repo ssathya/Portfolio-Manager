@@ -13,9 +13,10 @@ public class TechAnalProcessing
     private const int ApproxWorkingDaysInAYear = 252;
     private const int BatchSize = 100;
     private const int MomentumWindow = 125;
+    private const int MoneyFlowOffset = 14;
+    private readonly IRepository<Compute> computeRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
-    private readonly IRepository<Momentum> momRepository;
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
@@ -26,12 +27,12 @@ public class TechAnalProcessing
 
     public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
-        , IRepository<Momentum> momRepository
+        , IRepository<Compute> computeRepository
         , ILogger<TechAnalProcessing> logger)
     {
         this.yRepository = yRepository;
         this.idxRepository = idxRepository;
-        this.momRepository = momRepository;
+        this.computeRepository = computeRepository;
         this.logger = logger;
         for (int i = 1; i <= MomentumWindow; i++)
         {
@@ -50,8 +51,8 @@ public class TechAnalProcessing
         {
             return false;
         }
-        await momRepository.Truncate();
-        List<Momentum> momentum = new();
+        await computeRepository.Truncate();
+        List<Compute> momentum = new();
         int counter = 0;
         foreach (var ticker in tickers)
         {
@@ -61,9 +62,10 @@ public class TechAnalProcessing
                 logger.LogInformation($"Could not prices for {ticker}");
                 continue;
             }
-            Momentum momentumsForTicker = ComputeMomentum(yQuotes, ticker);
+            Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
             if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
             {
+                ComputeMoneyFlow(yQuotes, momentumsForTicker);
                 momentum.Add(momentumsForTicker);
                 counter++;
             }
@@ -88,9 +90,58 @@ public class TechAnalProcessing
 
     #region Private Methods
 
-    private Momentum ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
+    private static void ComputeMoneyFlow(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
     {
-        Momentum momentumValues = new();
+        yQuotes.Sort((a, b) => a.Date.CompareTo(b.Date));
+        int iterator = MoneyFlowOffset;
+        List<decimal> lows = new(); List<decimal> highs = new(); List<decimal> closes = new();
+        List<long> volumes = new();
+        while (iterator + MomentumWindow < yQuotes.Count)
+        {
+            lows = yQuotes.Select(x => x.Low)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            highs = yQuotes.Select(x => x.High)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            closes = yQuotes.Select(x => x.ClosingPrice)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            volumes = yQuotes.Select(x => x.Volume)
+                .Skip(iterator - MoneyFlowOffset)
+                .Take(MoneyFlowOffset)
+                .ToList();
+            List<decimal> typicalPrices = new();
+            for (int i = 0; i < lows.Count; i++)
+            {
+                typicalPrices.Add((lows[i] + highs[i] + closes[i]) * volumes[i] / 3);
+            }
+            decimal positiveMoneyFlow = 0M;
+            decimal negativeMoneyFlow = 0M;
+            for (int i = 1; i < typicalPrices.Count; i++)
+            {
+                if (typicalPrices[i] > typicalPrices[i - 1])
+                {
+                    positiveMoneyFlow += typicalPrices[i];
+                }
+                else
+                {
+                    negativeMoneyFlow += typicalPrices[i];
+                }
+            }
+            decimal moneyRatio = positiveMoneyFlow / negativeMoneyFlow;
+            decimal moneyRatioPercent = 100 - (100 / (1 + moneyRatio));
+            momentumsForTicker.ComputedValues[iterator].MoneyFlow = moneyRatioPercent;
+            iterator++;
+        }
+    }
+
+    private Compute ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
+    {
+        Compute momentumValues = new();
         if (yQuotes.Count < MomentumWindow)
         {
             return momentumValues;
@@ -167,11 +218,11 @@ public class TechAnalProcessing
         }
     }
 
-    private async Task SaveValuesToDatabase(List<Momentum> momentum)
+    private async Task SaveValuesToDatabase(List<Compute> momentum)
     {
         try
         {
-            await momRepository.Add(momentum);
+            await computeRepository.Add(momentum);
         }
         catch (Exception ex)
         {

@@ -21,11 +21,12 @@ public class AppDbContext : DbContext
 
     #region Public Properties
 
-    public DbSet<IndexComponent> IndexComponents { get; set; }
+    public DbSet<Compute> Computes { get; set; }
     public DbSet<EarningsCalendar> EarningsCalendars { get; set; }
     public DbSet<EarningsCalExceptions> EarningsCalExceptions { get; set; }
     public DbSet<FinStatements> FinStatements { get; set; }
-    public DbSet<Compute> Computes { get; set; }
+    public DbSet<IndexComponent> IndexComponents { get; set; }
+    public DbSet<ScoreDetail> ScoreDetails { get; set; }
     public DbSet<YPrice> YPrices { get; set; }
 
     #endregion Public Properties
@@ -35,14 +36,12 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseSerialColumns();
-        modelBuilder.Entity<Compute>()
-            .HasIndex(p => p.Ticker);
-        //modelBuilder.Entity<Momentum>().OwnsMany(p => p.ComputedValues, options =>
-        //{
-        //    options.ToJson();
-        //});
-        modelBuilder.Entity<YPrice>()
-            .HasIndex(p => p.Ticker);
+        modelBuilder.Entity<Compute>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<EarningsCalendar>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<FinStatements>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<IndexComponent>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<ScoreDetail>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<YPrice>().HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

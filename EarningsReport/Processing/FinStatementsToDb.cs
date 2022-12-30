@@ -3,11 +3,6 @@ using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EarningsReport.Processing;
 

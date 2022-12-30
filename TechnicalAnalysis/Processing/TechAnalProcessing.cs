@@ -1,4 +1,5 @@
 ﻿using ApplicationModels.Compute;
+using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
 using Microsoft.Extensions.Logging;
@@ -8,41 +9,34 @@ namespace TechnicalAnalysis.Processing;
 
 public class TechAnalProcessing
 {
-    #region Private Fields
-
     private const int ApproxWorkingDaysInAYear = 252;
     private const int BatchSize = 100;
     private const int MomentumWindow = 125;
     private const int MoneyFlowOffset = 14;
     private readonly IRepository<Compute> computeRepository;
+    private readonly IRepository<FinStatements> finStatementRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
 
-    #endregion Private Fields
-
-    #region Public Constructors
-
     public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
         , IRepository<Compute> computeRepository
+        , IRepository<FinStatements> finStatementRepository
         , ILogger<TechAnalProcessing> logger)
     {
-        this.yRepository = yRepository;
-        this.idxRepository = idxRepository;
         this.computeRepository = computeRepository;
+        this.finStatementRepository = finStatementRepository;
+        this.idxRepository = idxRepository;
         this.logger = logger;
+        this.yRepository = yRepository;
         for (int i = 1; i <= MomentumWindow; i++)
         {
             xAxis.Add(i);
         }
     }
-
-    #endregion Public Constructors
-
-    #region Public Methods
 
     public async Task<bool> ExecAsync()
     {
@@ -51,6 +45,21 @@ public class TechAnalProcessing
         {
             return false;
         }
+        await ComputeMomentumAndMoneyFlow(tickers);
+        bool computeResult = await ComputePiotroskiScoresAsync(tickers);
+        return true;
+    }
+
+    private async Task<bool> ComputePiotroskiScoresAsync(List<string> tickers)
+    {
+        List<FinStatements> finStatements = (await finStatementRepository.FindAll())
+            .ToList();
+
+        throw new NotImplementedException();
+    }
+
+    private async Task ComputeMomentumAndMoneyFlow(List<string> tickers)
+    {
         await computeRepository.Truncate();
         List<Compute> momentum = new();
         int counter = 0;
@@ -83,12 +92,7 @@ public class TechAnalProcessing
         {
             await SaveValuesToDatabase(momentum);
         }
-        return true;
     }
-
-    #endregion Public Methods
-
-    #region Private Methods
 
     private static void ComputeMoneyFlow(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
     {
@@ -230,6 +234,4 @@ public class TechAnalProcessing
             logger.LogError($"{ex.Message}");
         }
     }
-
-    #endregion Private Methods
 }

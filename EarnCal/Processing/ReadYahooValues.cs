@@ -46,8 +46,8 @@ public class ReadYahooValues
             logger.LogError(ex.Message);
             return defaultDt;
         }
-        var nodes = doc.DocumentNode.SelectNodes(innerNode);
-        if (nodes.Count != 0)
+        HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes(innerNode);
+        if (nodes != null && nodes.Count != 0)
         {
             List<DateTime> extractDates = new();
             foreach (var node in nodes)

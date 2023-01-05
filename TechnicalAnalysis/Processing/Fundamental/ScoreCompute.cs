@@ -1,0 +1,244 @@
+﻿using ApplicationModels.FinancialStatement.AlphaVantage;
+using Microsoft.Extensions.Logging;
+using PsqlAccess;
+using TechnicalAnalysis.Model;
+
+namespace TechnicalAnalysis.Processing.Fundamental;
+
+public class ScoreCompute
+{
+    private readonly IRepository<Overview> overViewRepository;
+    private readonly IRepository<BalanceSheet> balanceSheetRepository;
+    private readonly IRepository<IncomeStatement> incomeStatementRepository;
+    private readonly IRepository<CashFlow> cashFlowRepository;
+    private readonly ILogger<ScoreCompute> logger;
+    private const int OneYearOffSet = 4;
+    private Dictionary<string, int> computedValues = new();
+
+    public ScoreCompute(IRepository<Overview> overViewRepository
+        , IRepository<BalanceSheet> balanceSheetRepository
+        , IRepository<IncomeStatement> incomeStatementRepository
+        , IRepository<CashFlow> cashFlowRepository
+        , ILogger<ScoreCompute> logger)
+    {
+        this.overViewRepository = overViewRepository;
+        this.balanceSheetRepository = balanceSheetRepository;
+        this.incomeStatementRepository = incomeStatementRepository;
+        this.cashFlowRepository = cashFlowRepository;
+        this.logger = logger;
+    }
+
+    public async Task<bool> ExecAsync()
+    {
+        //1. Read all financial statements
+        List<BalanceSheet> balanceSheets = await ReadAllBalanceSheetsAsync();
+        List<CashFlow> cashFlows = await ReadAllCashFlowsAsync();
+        List<IncomeStatement> incomeStatements = await ReadAllIncomeStatementsAsync();
+        if (balanceSheets.Count != cashFlows.Count && balanceSheets.Count != incomeStatements.Count)
+        {
+            logger.LogInformation("Inconstant values in database");
+        }
+        List<DerivedFinancials> derivedFinancials = new();
+        foreach (var balanceSheet in balanceSheets)
+        {
+            if (string.IsNullOrEmpty(balanceSheet.Ticker)) continue;
+            var df = new DerivedFinancials();
+            PopulateBSValues(balanceSheet, df);
+            var cashFlow = cashFlows.FirstOrDefault(x => x.Ticker == balanceSheet.Ticker);
+            if (cashFlow != default)
+            {
+                PopulateCFValues(cashFlow, df);
+            }
+            var incomeStatement = incomeStatements.FirstOrDefault(x => x.Ticker == balanceSheet.Ticker);
+            if (incomeStatement != default)
+            {
+                PopulateISValues(incomeStatement, df);
+            }
+            FixZeroValues(df);
+            computedValues[balanceSheet.Ticker] = ComputeFScore.ComputeScores(df);
+            derivedFinancials.Add(df);
+        }
+        return true;
+    }
+
+    private static void PopulateISValues(IncomeStatement incomeStatement, DerivedFinancials df)
+    {
+        if (incomeStatement.AnnualReports.Count >= 3)
+        {
+            var incStm = incomeStatement.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.CyRevenue = incStm[0].TotalRevenue ?? 0;
+            df.PyRevenue = incStm[1].TotalRevenue ?? 0;
+            df.CyGrossProfit = incStm[0].GrossProfit ?? 0;
+            df.PyGrossProfit = incStm[1].GrossProfit ?? 0;
+            df.CyNetIncome = incStm[0].NetIncome ?? 0;
+            df.PyNetIncome = incStm[1].NetIncome ?? 0;
+            return;
+        }
+        else if (incomeStatement.QuarterlyReports.Count >= 9)
+        {
+            var incStm = incomeStatement.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding)
+            .ToList();
+            df.CyRevenue =
+                (incStm[0].TotalRevenue ?? 0)
+                + (incStm[1].TotalRevenue ?? 0)
+                + (incStm[2].TotalRevenue ?? 0)
+                + (incStm[3].TotalRevenue ?? 0);
+            df.PyRevenue =
+                (incStm[OneYearOffSet + 0].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 1].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 2].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 3].TotalRevenue ?? 0);
+            df.CyGrossProfit = (incStm[0].GrossProfit ?? 0)
+                + (incStm[1].GrossProfit ?? 0)
+                + (incStm[2].GrossProfit ?? 0)
+                + (incStm[3].GrossProfit ?? 0);
+            df.PyGrossProfit =
+                (incStm[OneYearOffSet + 0].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 1].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 2].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 3].GrossProfit ?? 0);
+            df.CyNetIncome = (incStm[0].NetIncome ?? 0)
+                + (incStm[1].NetIncome ?? 0)
+                + (incStm[2].NetIncome ?? 0)
+                + (incStm[3].NetIncome ?? 0);
+            df.PyNetIncome =
+                (incStm[OneYearOffSet + 0].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 1].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 2].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 3].NetIncome ?? 0);
+        }
+    }
+
+    private static void PopulateCFValues(CashFlow cashFlow, DerivedFinancials df)
+    {
+        if (cashFlow.AnnualReports.Count >= 3)
+        {
+            var cfs = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = cfs[0].OperatingCashflow ?? 0;
+            return;
+        }
+        else if (cashFlow.QuarterlyReports.Count >= 9)
+        {
+            var cfs = cashFlow.QuarterlyReports.OrderBy(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = (cfs[0].OperatingCashflow ?? 0)
+            + (cfs[1].OperatingCashflow ?? 0)
+            + (cfs[2].OperatingCashflow ?? 0)
+            + (cfs[3].OperatingCashflow ?? 0);
+        }
+    }
+
+    private static void PopulateBSValues(BalanceSheet balanceSheet, DerivedFinancials df)
+    {
+        if (balanceSheet.AnnualReports.Count >= 3)
+        {
+            var bs = balanceSheet.AnnualReports.OrderByDescending(r => r.FiscalDateEnding)
+            .ToList();
+            df.LongTermDebt = bs[0].LongTermDebt ?? 0;
+            df.TotalAssets = bs[0].TotalAssets ?? 0;
+            df.CurrentAssets = bs[0].TotalCurrentAssets ?? 0;
+            df.CurrentLiabilities = bs[0].TotalCurrentLiabilities ?? 0;
+            df.PyLongTermDebt = bs[1].LongTermDebt ?? 0;
+            df.PyTotalAssets = bs[1].TotalAssets ?? 0;
+            df.PyPyTotalAssets = bs[2].TotalAssets ?? 0;
+            df.PyCurrentAssets = bs[1].TotalCurrentAssets ?? 0;
+            df.PyCurrentLiabilities = bs[1].TotalCurrentLiabilities ?? 0;
+            df.WaSharesOutstanding = bs[0].CommonStockSharesOutstanding ?? 0;
+            df.PyWaSharesOutstanding = bs[1].CommonStockSharesOutstanding ?? 0;
+            df.Ticker = balanceSheet.Ticker;
+            return;
+        }
+        else if (balanceSheet.QuarterlyReports.Count >= 9)
+        {
+            var bs = balanceSheet.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.LongTermDebt = bs[0].LongTermDebt ?? 0;
+            df.TotalAssets = bs[0].TotalAssets ?? 0;
+            df.CurrentAssets = bs[0].TotalCurrentAssets ?? 0;
+            df.CurrentLiabilities = bs[0].TotalCurrentLiabilities ?? 0;
+            df.PyLongTermDebt = bs[OneYearOffSet].LongTermDebt ?? 0;
+            df.PyTotalAssets = bs[OneYearOffSet].TotalAssets ?? 0;
+            df.PyPyTotalAssets = bs[OneYearOffSet + OneYearOffSet].TotalAssets ?? 0;
+            df.PyCurrentAssets = bs[OneYearOffSet].TotalCurrentAssets ?? 0;
+            df.PyCurrentLiabilities = bs[OneYearOffSet].TotalCurrentLiabilities ?? 0;
+            df.WaSharesOutstanding = bs[0].CommonStockSharesOutstanding ?? 0;
+            df.PyWaSharesOutstanding = bs[OneYearOffSet].CommonStockSharesOutstanding ?? 0;
+            //error in current Quarter. Let us step back by a quarter.
+            if (df.WaSharesOutstanding == 0)
+            {
+                df.WaSharesOutstanding = bs[0 + 1].CommonStockSharesOutstanding ?? 0;
+            }
+            if (df.PyWaSharesOutstanding == 0)
+            {
+                df.PyWaSharesOutstanding = bs[OneYearOffSet + 1].CommonStockSharesOutstanding ?? 0;
+            }
+        }
+    }
+
+    private async Task<List<IncomeStatement>> ReadAllIncomeStatementsAsync()
+    {
+        try
+        {
+            List<IncomeStatement> incomeStatements = (await incomeStatementRepository.FindAll())
+                .ToList();
+            return incomeStatements;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
+            logger.LogError(ex.ToString());
+        }
+        return new List<IncomeStatement>();
+    }
+
+    private async Task<List<CashFlow>> ReadAllCashFlowsAsync()
+    {
+        try
+        {
+            List<CashFlow> cashFlows = (await cashFlowRepository.FindAll())
+               .ToList();
+            return cashFlows;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
+            logger.LogError(ex.ToString());
+        }
+        return new List<CashFlow>();
+    }
+
+    private async Task<List<BalanceSheet>> ReadAllBalanceSheetsAsync()
+    {
+        try
+        {
+            List<BalanceSheet> balanceSheets = (await balanceSheetRepository.FindAll())
+                .ToList();
+            return balanceSheets;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllBalanceSheetsAsync");
+            logger.LogError(ex.ToString());
+        }
+        return new List<BalanceSheet>();
+    }
+
+    private static void FixZeroValues(DerivedFinancials df)
+    {
+        decimal oneCent = 0.01M;
+        df.LongTermDebt = df.LongTermDebt == 0 ? oneCent : df.LongTermDebt;
+        df.TotalAssets = df.TotalAssets == 0 ? oneCent : df.TotalAssets;
+        df.CurrentAssets = df.CurrentAssets == 0 ? oneCent : df.CurrentAssets;
+        df.CurrentLiabilities = df.CurrentLiabilities == 0 ? oneCent : df.CurrentLiabilities;
+        df.PyLongTermDebt = df.PyLongTermDebt == 0 ? oneCent : df.PyLongTermDebt;
+        df.PyTotalAssets = df.PyTotalAssets == 0 ? oneCent : df.PyTotalAssets;
+        df.PyCurrentAssets = df.PyCurrentAssets == 0 ? oneCent : df.PyCurrentAssets;
+        df.PyPyTotalAssets = df.PyPyTotalAssets == 0 ? oneCent : df.PyPyTotalAssets;
+        df.WaSharesOutstanding = df.WaSharesOutstanding == 0 ? 1 : df.WaSharesOutstanding;
+        df.PyWaSharesOutstanding = df.PyWaSharesOutstanding == 0 ? 1 : df.PyWaSharesOutstanding;
+        df.CyRevenue = df.CyRevenue == 0 ? oneCent : df.CyRevenue;
+        df.PyRevenue = df.PyRevenue == 0 ? oneCent : df.PyRevenue;
+        df.CyGrossProfit = df.CyGrossProfit == 0 ? oneCent : df.CyGrossProfit;
+        df.PyGrossProfit = df.PyGrossProfit == 0 ? oneCent : df.PyGrossProfit;
+        df.CyNetIncome = df.CyNetIncome == 0 ? oneCent : df.CyNetIncome;
+        df.PyNetIncome = df.PyNetIncome == 0 ? oneCent : df.PyNetIncome;
+    }
+}

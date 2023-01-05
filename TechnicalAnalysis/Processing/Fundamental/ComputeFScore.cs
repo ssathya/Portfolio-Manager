@@ -1,6 +1,6 @@
 ﻿using TechnicalAnalysis.Model;
 
-namespace TechnicalAnalysis.Processing;
+namespace TechnicalAnalysis.Processing.Fundamental;
 
 public static class ComputeFScore
 {
@@ -28,7 +28,7 @@ public static class ComputeFScore
     //1. Profitability
     private static int Compute1ReturnOnAssets(DerivedFinancials df)
     {
-        if ((df.TotalAssets + df.PyTotalAssets) == 0)
+        if (df.TotalAssets + df.PyTotalAssets == 0)
         {
             return 0;
         }
@@ -45,12 +45,12 @@ public static class ComputeFScore
     private static int Compute3IsROABetter(DerivedFinancials df)
     {
         //divide by zero check.
-        if ((df.TotalAssets + df.PyTotalAssets) == 0
-            || (df.PyTotalAssets + df.PyPyTotalAssets) == 0)
+        if (df.TotalAssets + df.PyTotalAssets == 0
+            || df.PyTotalAssets + df.PyPyTotalAssets == 0)
         {
             return 0;
         }
-        return (df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2)) > (df.PyNetIncome / (df.PyTotalAssets + df.PyPyTotalAssets)) ? 1 : 0;
+        return df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2) > df.PyNetIncome / (df.PyTotalAssets + df.PyPyTotalAssets) ? 1 : 0;
     }
 
     //4. Accruals
@@ -58,12 +58,12 @@ public static class ComputeFScore
     {
         //divide by zero check.
         if (df.TotalAssets == 0
-            || (df.TotalAssets + df.PyTotalAssets) == 0)
+            || df.TotalAssets + df.PyTotalAssets == 0)
         {
             return 0;
         }
 
-        return (df.OperatingCashFlow / df.TotalAssets) > (df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2)) ? 1 : 0;
+        return df.OperatingCashFlow / df.TotalAssets > df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2) ? 1 : 0;
     }
 
     //5. Leverage, Liquidity and Source of Funds
@@ -73,7 +73,7 @@ public static class ComputeFScore
         {
             return 1;
         }
-        return (df.LongTermDebt / df.TotalAssets) <= (df.PyLongTermDebt / df.PyTotalAssets) ? 1 : 0;
+        return df.LongTermDebt / df.TotalAssets <= df.PyLongTermDebt / df.PyTotalAssets ? 1 : 0;
     }
 
     //6. Leverage, Liquidity and Source of Funds
@@ -83,13 +83,13 @@ public static class ComputeFScore
         {
             return 0;
         }
-        return (df.CurrentAssets / df.CurrentLiabilities) > (df.PyCurrentAssets / df.PyCurrentLiabilities) ? 1 : 0;
+        return df.CurrentAssets / df.CurrentLiabilities > df.PyCurrentAssets / df.PyCurrentLiabilities ? 1 : 0;
     }
 
     //7. Leverage, Liquidity and Source of Funds
     private static int Compute7ChangeInNumberOfShares(DerivedFinancials df)
     {
-        return (df.WaSharesOutstanding <= df.PyWaSharesOutstanding) ? 1 : 0;
+        return df.WaSharesOutstanding <= df.PyWaSharesOutstanding ? 1 : 0;
     }
 
     //8. Change in Gross Margin
@@ -99,22 +99,22 @@ public static class ComputeFScore
         {
             return 0;
         }
-        return ((df.CyGrossProfit / df.CyRevenue) > (df.PyGrossProfit / df.PyRevenue)) ? 1 : 0;
+        return df.CyGrossProfit / df.CyRevenue > df.PyGrossProfit / df.PyRevenue ? 1 : 0;
     }
 
     //9. Change in Asset Turnover ratio
     private static int Compute9AssetTurnoverRatio(DerivedFinancials df)
     {
-        if ((df.TotalAssets + df.PyTotalAssets) == 0
-            || (df.PyTotalAssets + df.PyPyTotalAssets) == 0)
+        if (df.TotalAssets + df.PyTotalAssets == 0
+            || df.PyTotalAssets + df.PyPyTotalAssets == 0)
         {
             return 0;
         }
-        return (
-            (df.CyRevenue / ((df.TotalAssets + df.PyTotalAssets) / 2))
+        return 
+            df.CyRevenue / ((df.TotalAssets + df.PyTotalAssets) / 2)
             >
-            (df.PyRevenue / ((df.PyTotalAssets + df.PyPyTotalAssets) / 2))
-            ) ? 1 : 0;
+            df.PyRevenue / ((df.PyTotalAssets + df.PyPyTotalAssets) / 2)
+             ? 1 : 0;
     }
 
     #endregion Private Methods

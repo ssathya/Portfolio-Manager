@@ -46,16 +46,8 @@ public class TechAnalProcessing
             return false;
         }
         await ComputeMomentumAndMoneyFlow(tickers);
-        bool computeResult = await ComputePiotroskiScoresAsync(tickers);
+
         return true;
-    }
-
-    private async Task<bool> ComputePiotroskiScoresAsync(List<string> tickers)
-    {
-        List<FinStatements> finStatements = (await finStatementRepository.FindAll())
-            .ToList();
-
-        throw new NotImplementedException();
     }
 
     private async Task ComputeMomentumAndMoneyFlow(List<string> tickers)

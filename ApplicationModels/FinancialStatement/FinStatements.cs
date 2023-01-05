@@ -31,4 +31,5 @@ public class FinStatements : Entity
     public float? ProceedsFromIssuanceOfDebt { get; set; }
     public float? PaymentsOfDebt { get; set; }
     public float? DividendsPaid { get; set; }
+    public float? LongTermDebt { get; set; }
 }

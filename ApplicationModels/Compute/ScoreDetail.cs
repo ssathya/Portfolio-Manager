@@ -6,13 +6,23 @@ public class ScoreDetail : Entity
     public int PiotroskiComputedValue { get; set; }
     public DateTime LastEarningsDate { get; set; }
     public int SimFinRating { get; set; }
-    public bool ReturnOnAssets { get; set; }
+
+    //From Other sources
+    //Profitability
+    public bool NetIncome { get; set; }
+
     public bool OperatingCashFlow { get; set; }
-    public bool ChangeInROA { get; set; }
-    public bool ChangInLongTermDebt { get; set; }
-    public bool ReturnOnEquity { get; set; }
-    public bool ChangeInNetIncome { get; set; }
-    public bool ChangeInCurrentRatio { get; set; }
-    public bool ChangeInSharesOutstanding { get; set; }
+    public bool ReturnOnAssets { get; set; }
+    public bool QualityOfEarnings { get; set; }
+
+    //Leverage/Liquidity
+    public bool DecreasedLeverage { get; set; }
+
+    public bool IncreasedLiquidity { get; set; }
+    public bool ZeroDilution { get; set; }
+
+    //Operating Efficiency
     public bool GrossMargin { get; set; }
+
+    public bool AssetTurnOver { get; set; }
 }

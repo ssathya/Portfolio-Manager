@@ -1,73 +1,121 @@
-﻿using ApplicationModels.FinancialStatement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using TechnicalAnalysis.Model;
 
 namespace TechnicalAnalysis.Processing;
 
 public static class ComputeFScore
 {
-    private const string ProcessFilingType = "10-K";
+    #region Public Methods
 
-    //Rule 1 as per Wikipedia
-    public static bool ReturnOnAssets(List<FinStatements> finStatements)
+    public static int ComputeScores(DerivedFinancials df)
     {
-        List<FinStatements> fs = ArrangeFinStatements(finStatements);
-        if (fs != null && fs.Count >= 2)
+        int score = 0;
+        score += Compute1ReturnOnAssets(df);
+        score += Compute2OperatingCashFlow(df);
+        score += Compute3IsROABetter(df);
+        score += Compute4Accruals(df);
+        score += Compute5ChangeInLeverage(df);
+        score += Compute6ChangeInCurrentRatio(df);
+        score += Compute7ChangeInNumberOfShares(df);
+        score += Compute8IncreaseGrossMargin(df);
+        score += Compute9AssetTurnoverRatio(df);
+        return score;
+    }
+
+    #endregion Public Methods
+
+    #region Private Methods
+
+    //1. Profitability
+    private static int Compute1ReturnOnAssets(DerivedFinancials df)
+    {
+        if ((df.TotalAssets + df.PyTotalAssets) == 0)
         {
-            if ((fs[0].Assets + fs[1].Assets) == 0)
-            {
-                return false;
-            }
-            return (fs[0].NetIncome / ((fs[0].Assets + fs[1].Assets) / 2)) > 0;
+            return 0;
         }
-        return false;
+        return df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2) > 0 ? 1 : 0;
     }
 
-    private static List<FinStatements> ArrangeFinStatements(List<FinStatements> finStatements)
+    //2. Operating Cash Flow
+    private static int Compute2OperatingCashFlow(DerivedFinancials df)
     {
-        return finStatements
-                    .Where(x => x.FilingType.Equals(ProcessFilingType))
-                    .OrderByDescending(x => x.PeriodEnd).ToList()
-                    .ToList();
+        return df.OperatingCashFlow > 0 ? 1 : 0;
     }
 
-    //Rule 2 - Wikipedia
-    public static bool OperatingCashFlow(List<FinStatements> finStatements)
+    //3. Change in Return of Assets
+    private static int Compute3IsROABetter(DerivedFinancials df)
     {
-        var fs = ArrangeFinStatements(finStatements);
-        if (fs != null && fs.Count > 0)
+        //divide by zero check.
+        if ((df.TotalAssets + df.PyTotalAssets) == 0
+            || (df.PyTotalAssets + df.PyPyTotalAssets) == 0)
         {
-            return fs[0].OperatingCashFlows > 0;
+            return 0;
         }
-        return false;
+        return (df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2)) > (df.PyNetIncome / (df.PyTotalAssets + df.PyPyTotalAssets)) ? 1 : 0;
     }
 
-    //Rule 3 - Wikipedia
-    public static bool ChangeInROA(List<FinStatements> finStatements)
+    //4. Accruals
+    private static int Compute4Accruals(DerivedFinancials df)
     {
-        var fs = ArrangeFinStatements(finStatements);
-        if (fs != null && fs.Count > 2)
+        //divide by zero check.
+        if (df.TotalAssets == 0
+            || (df.TotalAssets + df.PyTotalAssets) == 0)
         {
-            if ((fs[0].Assets + fs[1].Assets) == 0
-                || (fs[2].Assets + fs[1].Assets) == 0)
-                return false;
-            return (fs[0].NetIncome / ((fs[0].Assets + fs[1].Assets) / 2)
-                > fs[1].NetIncome / ((fs[1].Assets + fs[2].Assets) / 2));
+            return 0;
         }
-        return false;
+
+        return (df.OperatingCashFlow / df.TotalAssets) > (df.CyNetIncome / ((df.TotalAssets + df.PyTotalAssets) / 2)) ? 1 : 0;
     }
 
-    //Rule 4 - Wikipedia
-    public static bool ChangInLongTermDebt(List<FinStatements> finStatements)
+    //5. Leverage, Liquidity and Source of Funds
+    private static int Compute5ChangeInLeverage(DerivedFinancials df)
     {
-        var fs = ArrangeFinStatements(finStatements);
-        if (fs == null || fs.Count < 2)
+        if (df.TotalAssets == 0 || df.PyTotalAssets == 0)
         {
-            return false;
+            return 1;
         }
-        return (fs[0].Liabilities / fs[0].Assets) < (fs[1].Liabilities / fs[1].Assets);
+        return (df.LongTermDebt / df.TotalAssets) <= (df.PyLongTermDebt / df.PyTotalAssets) ? 1 : 0;
     }
+
+    //6. Leverage, Liquidity and Source of Funds
+    private static int Compute6ChangeInCurrentRatio(DerivedFinancials df)
+    {
+        if (df.CurrentLiabilities == 0 || df.PyCurrentLiabilities == 0)
+        {
+            return 0;
+        }
+        return (df.CurrentAssets / df.CurrentLiabilities) > (df.PyCurrentAssets / df.PyCurrentLiabilities) ? 1 : 0;
+    }
+
+    //7. Leverage, Liquidity and Source of Funds
+    private static int Compute7ChangeInNumberOfShares(DerivedFinancials df)
+    {
+        return (df.WaSharesOutstanding <= df.PyWaSharesOutstanding) ? 1 : 0;
+    }
+
+    //8. Change in Gross Margin
+    private static int Compute8IncreaseGrossMargin(DerivedFinancials df)
+    {
+        if (df.CyRevenue == 0 || df.PyRevenue == 0)
+        {
+            return 0;
+        }
+        return ((df.CyGrossProfit / df.CyRevenue) > (df.PyGrossProfit / df.PyRevenue)) ? 1 : 0;
+    }
+
+    //9. Change in Asset Turnover ratio
+    private static int Compute9AssetTurnoverRatio(DerivedFinancials df)
+    {
+        if ((df.TotalAssets + df.PyTotalAssets) == 0
+            || (df.PyTotalAssets + df.PyPyTotalAssets) == 0)
+        {
+            return 0;
+        }
+        return (
+            (df.CyRevenue / ((df.TotalAssets + df.PyTotalAssets) / 2))
+            >
+            (df.PyRevenue / ((df.PyTotalAssets + df.PyPyTotalAssets) / 2))
+            ) ? 1 : 0;
+    }
+
+    #endregion Private Methods
 }

@@ -6,6 +6,7 @@ using PsqlAccess;
 using SecuritiesExchangeCommission.Edgar;
 using Xbrl;
 using Xbrl.FinancialStatement;
+using Xbrl.Helpers;
 
 namespace EarningsReport.Processing;
 
@@ -82,6 +83,7 @@ public class GetFinancialStatements
                 string xml = srCheck.ReadToEnd();
                 if (!string.IsNullOrEmpty(xml))
                 {
+                    await File.WriteAllTextAsync($"{ticker}.xml", xml);
                     doc = XbrlInstanceDocument.Create(s);
                 }
                 else
@@ -91,7 +93,19 @@ public class GetFinancialStatements
                 if (doc != null)
                 {
                     FinancialStatement financialStatement = doc.CreateFinancialStatement();
+                    var focus_context = doc.FindNormalPeriodPrimaryContext();
+
                     FinStatements statements = mapper.Map<FinStatements>(financialStatement);
+                    float longTermDebt = doc.GetValueFromPriorities(focus_context.Id,
+                        "LongTermDebtAndCapitalLeaseObligationsCurrent",
+                        "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities",
+                        "LongTermDebtCurrent",
+                        "LongTermDebtMaturityDate",
+                        "LongTermDebtFairValue").ValueAsFloat();
+                    if (longTermDebt != 0)
+                    {
+                        statements.LongTermDebt = longTermDebt;
+                    }
                     statements.Ticker = ticker;
                     statements.FilingType = filingType;
                     if (statements.PeriodStart != null)

@@ -12,6 +12,7 @@ public class AppMapper : Profile
             .ForMember(d => d.Ticker, s => s.Ignore())
             .ForMember(d => d.Id, s => s.Ignore())
             .ForMember(d => d.FilingType, s => s.Ignore())
+            .ForMember(d => d.LongTermDebt, s => s.Ignore())
             .ReverseMap();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AppCommon.CacheHandler;
 using AppCommon.DatabaseHandler;
 using AppCommon.Services;
+using ApplicationModels.FinancialStatement.AlphaVantage;
 using EarningsReport.Processing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,8 @@ public class Function
         logger = provider.GetService<ILogger<Function>>();
         GetFinancialStatements? getFinancialStatements = provider.GetService<GetFinancialStatements>();
         FinStatementsToDb? finStatementsToDb = provider.GetService<FinStatementsToDb>();
+        AlphaVantageReports? alphaVantageReports = provider.GetService<AlphaVantageReports>();
+        AlphaVantageToDb? alphaVantageToDb = provider?.GetService<AlphaVantageToDb>();
         if (logger == null)
         {
             Console.WriteLine("Unable to create logger object");
@@ -49,15 +52,28 @@ public class Function
             logger.LogError("Unable to create object FinStatementsToDb");
             return;
         }
-        var finStatements = await getFinancialStatements.ExcecAsync();
-        if (finStatements.Count != 0)
+        if (alphaVantageReports == null)
         {
-            var insertResult = await finStatementsToDb.ExcecAsync(finStatements);
-            if (!insertResult)
-            {
-                logger.LogError("Unable to update database");
-            }
+            logger.LogError("Unable to create object AlphaVantageReports");
+            return;
         }
+        if (alphaVantageToDb == null)
+        {
+            logger.LogError("Unable to create object AlphaVantageToDb");
+            return;
+        }
+        //var finStatements = await getFinancialStatements.ExcecAsync();
+        //if (finStatements.Count != 0)
+        //{
+        //    var insertResult = await finStatementsToDb.ExcecAsync(finStatements);
+        //    if (!insertResult)
+        //    {
+        //        logger.LogError("Unable to update database");
+        //    }
+        //}
+        (Overview overview, BalanceSheet balanceSheet, IncomeStatement incomeStatement, CashFlow cashFlow)
+            = await alphaVantageReports.ExecAsync();
+        await alphaVantageToDb.ExecAsync(overview, balanceSheet, incomeStatement, cashFlow);
         return;
     }
 
@@ -83,5 +99,7 @@ public class Function
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<GetFinancialStatements>();
         services.AddScoped<FinStatementsToDb>();
+        services.AddScoped<AlphaVantageReports>();
+        services.AddScoped<AlphaVantageToDb>();
     }
 }

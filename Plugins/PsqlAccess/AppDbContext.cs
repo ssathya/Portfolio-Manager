@@ -1,6 +1,7 @@
 ﻿using ApplicationModels.Compute;
 using ApplicationModels.EarningsCal;
 using ApplicationModels.FinancialStatement;
+using ApplicationModels.FinancialStatement.AlphaVantage;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,10 @@ public class AppDbContext : DbContext
     public DbSet<IndexComponent> IndexComponents { get; set; }
     public DbSet<ScoreDetail> ScoreDetails { get; set; }
     public DbSet<YPrice> YPrices { get; set; }
+    public DbSet<Overview> Overviews { get; set; }
+    public DbSet<BalanceSheet> BalanceSheets { get; set; }
+    public DbSet<IncomeStatement> IncomeStatements { get; set; }
+    public DbSet<CashFlow> CashFlows { get; set; }
 
     #endregion Public Properties
 
@@ -42,6 +47,10 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<IndexComponent>().HasIndex(p => p.Ticker);
         modelBuilder.Entity<ScoreDetail>().HasIndex(p => p.Ticker);
         modelBuilder.Entity<YPrice>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<Overview>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<BalanceSheet>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<IncomeStatement>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<CashFlow>().HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

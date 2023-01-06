@@ -1,4 +1,5 @@
-﻿using ApplicationModels.FinancialStatement.AlphaVantage;
+﻿using ApplicationModels.Compute;
+using ApplicationModels.FinancialStatement.AlphaVantage;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
 using TechnicalAnalysis.Model;
@@ -7,26 +8,39 @@ namespace TechnicalAnalysis.Processing.Fundamental;
 
 public class ScoreCompute
 {
-    private readonly IRepository<Overview> overViewRepository;
-    private readonly IRepository<BalanceSheet> balanceSheetRepository;
-    private readonly IRepository<IncomeStatement> incomeStatementRepository;
-    private readonly IRepository<CashFlow> cashFlowRepository;
-    private readonly ILogger<ScoreCompute> logger;
+    #region Private Fields
+
     private const int OneYearOffSet = 4;
+    private readonly IRepository<BalanceSheet> balanceSheetRepository;
+    private readonly IRepository<CashFlow> cashFlowRepository;
+    private readonly IRepository<IncomeStatement> incomeStatementRepository;
+    private readonly ILogger<ScoreCompute> logger;
+    private readonly IRepository<Overview> overViewRepository;
+    private readonly IRepository<ScoreDetail> scoreDetailRepository;
     private Dictionary<string, int> computedValues = new();
+
+    #endregion Private Fields
+
+    #region Public Constructors
 
     public ScoreCompute(IRepository<Overview> overViewRepository
         , IRepository<BalanceSheet> balanceSheetRepository
         , IRepository<IncomeStatement> incomeStatementRepository
         , IRepository<CashFlow> cashFlowRepository
+        , IRepository<ScoreDetail> scoreDetailRepository
         , ILogger<ScoreCompute> logger)
     {
         this.overViewRepository = overViewRepository;
         this.balanceSheetRepository = balanceSheetRepository;
         this.incomeStatementRepository = incomeStatementRepository;
         this.cashFlowRepository = cashFlowRepository;
+        this.scoreDetailRepository = scoreDetailRepository;
         this.logger = logger;
     }
+
+    #endregion Public Constructors
+
+    #region Public Methods
 
     public async Task<bool> ExecAsync()
     {
@@ -38,12 +52,14 @@ public class ScoreCompute
         {
             logger.LogInformation("Inconstant values in database");
         }
-        List<DerivedFinancials> derivedFinancials = new();
+        List<ScoreDetail> scoreDetail = new();
         foreach (var balanceSheet in balanceSheets)
         {
             if (string.IsNullOrEmpty(balanceSheet.Ticker)) continue;
             var df = new DerivedFinancials();
             PopulateBSValues(balanceSheet, df);
+            //Check if there is insufficient values; if yes computed values has a zero for this ticker.
+            if (computedValues.ContainsKey(balanceSheet.Ticker)) continue;
             var cashFlow = cashFlows.FirstOrDefault(x => x.Ticker == balanceSheet.Ticker);
             if (cashFlow != default)
             {
@@ -55,10 +71,54 @@ public class ScoreCompute
                 PopulateISValues(incomeStatement, df);
             }
             FixZeroValues(df);
-            computedValues[balanceSheet.Ticker] = ComputeFScore.ComputeScores(df);
-            derivedFinancials.Add(df);
+            scoreDetail.Add(ComputePScore(df, balanceSheet));
         }
-        return true;
+        scoreDetail.AddRange(HandleSecuritiesWithInsufficientData());
+        bool saveResult = await SaveValuesToDb(scoreDetail);
+        return saveResult;
+    }
+
+    #endregion Public Methods
+
+    #region Private Methods
+
+    private static void FixZeroValues(DerivedFinancials df)
+    {
+        decimal oneCent = 0.01M;
+        df.LongTermDebt = df.LongTermDebt == 0 ? oneCent : df.LongTermDebt;
+        df.TotalAssets = df.TotalAssets == 0 ? oneCent : df.TotalAssets;
+        df.CurrentAssets = df.CurrentAssets == 0 ? oneCent : df.CurrentAssets;
+        df.CurrentLiabilities = df.CurrentLiabilities == 0 ? oneCent : df.CurrentLiabilities;
+        df.PyLongTermDebt = df.PyLongTermDebt == 0 ? oneCent : df.PyLongTermDebt;
+        df.PyTotalAssets = df.PyTotalAssets == 0 ? oneCent : df.PyTotalAssets;
+        df.PyCurrentAssets = df.PyCurrentAssets == 0 ? oneCent : df.PyCurrentAssets;
+        df.PyPyTotalAssets = df.PyPyTotalAssets == 0 ? oneCent : df.PyPyTotalAssets;
+        df.WaSharesOutstanding = df.WaSharesOutstanding == 0 ? 1 : df.WaSharesOutstanding;
+        df.PyWaSharesOutstanding = df.PyWaSharesOutstanding == 0 ? 1 : df.PyWaSharesOutstanding;
+        df.CyRevenue = df.CyRevenue == 0 ? oneCent : df.CyRevenue;
+        df.PyRevenue = df.PyRevenue == 0 ? oneCent : df.PyRevenue;
+        df.CyGrossProfit = df.CyGrossProfit == 0 ? oneCent : df.CyGrossProfit;
+        df.PyGrossProfit = df.PyGrossProfit == 0 ? oneCent : df.PyGrossProfit;
+        df.CyNetIncome = df.CyNetIncome == 0 ? oneCent : df.CyNetIncome;
+        df.PyNetIncome = df.PyNetIncome == 0 ? oneCent : df.PyNetIncome;
+    }
+
+    private static void PopulateCFValues(CashFlow cashFlow, DerivedFinancials df)
+    {
+        if (cashFlow.AnnualReports.Count >= 3)
+        {
+            var cfs = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = cfs[0].OperatingCashflow ?? 0;
+            return;
+        }
+        else if (cashFlow.QuarterlyReports.Count >= 9)
+        {
+            var cfs = cashFlow.QuarterlyReports.OrderBy(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = (cfs[0].OperatingCashflow ?? 0)
+            + (cfs[1].OperatingCashflow ?? 0)
+            + (cfs[2].OperatingCashflow ?? 0)
+            + (cfs[3].OperatingCashflow ?? 0);
+        }
     }
 
     private static void PopulateISValues(IncomeStatement incomeStatement, DerivedFinancials df)
@@ -109,25 +169,49 @@ public class ScoreCompute
         }
     }
 
-    private static void PopulateCFValues(CashFlow cashFlow, DerivedFinancials df)
+    private ScoreDetail ComputePScore(DerivedFinancials df, BalanceSheet balanceSheet)
     {
-        if (cashFlow.AnnualReports.Count >= 3)
+        var bsLstDate = balanceSheet.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).First();
+        computedValues[df.Ticker] = ComputeFScore.ComputeScores(df);
+        ScoreDetail sd = new()
         {
-            var cfs = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
-            df.OperatingCashFlow = cfs[0].OperatingCashflow ?? 0;
-            return;
-        }
-        else if (cashFlow.QuarterlyReports.Count >= 9)
-        {
-            var cfs = cashFlow.QuarterlyReports.OrderBy(r => r.FiscalDateEnding).ToList();
-            df.OperatingCashFlow = (cfs[0].OperatingCashflow ?? 0)
-            + (cfs[1].OperatingCashflow ?? 0)
-            + (cfs[2].OperatingCashflow ?? 0)
-            + (cfs[3].OperatingCashflow ?? 0);
-        }
+            Ticker = df.Ticker,
+            PiotroskiComputedValue = computedValues[df.Ticker],
+            LastEarningsDate = bsLstDate.FiscalDateEnding.ToUniversalTime(),
+            SimFinRating = 0,
+            ReturnOnAssets = ComputeFScore.Compute1ReturnOnAssets(df) == 1,
+            OperatingCashFlow = ComputeFScore.Compute2OperatingCashFlow(df) == 1,
+            IsROABetter = ComputeFScore.Compute3IsROABetter(df) == 1,
+            Accruals = ComputeFScore.Compute4Accruals(df) == 1,
+            ChangeInLeverage = ComputeFScore.Compute5ChangeInLeverage(df) == 1,
+            ChangeInCurrentRatio = ComputeFScore.Compute6ChangeInCurrentRatio(df) == 1,
+            ChangeInNumberOfShares = ComputeFScore.Compute7ChangeInNumberOfShares(df) == 1,
+            IncreaseGrossMargin = ComputeFScore.Compute8IncreaseGrossMargin(df) == 1,
+            AssetTurnoverRatio = ComputeFScore.Compute9AssetTurnoverRatio(df) == 1
+        };
+        return sd;
     }
 
-    private static void PopulateBSValues(BalanceSheet balanceSheet, DerivedFinancials df)
+    private IEnumerable<ScoreDetail> HandleSecuritiesWithInsufficientData()
+    {
+        List<ScoreDetail> scoreDetail = new();
+        List<string> tickers = new();
+        tickers.AddRange(from cv in computedValues
+                         where cv.Value == 0
+                         select cv.Key);
+        foreach (var ticker in tickers)
+        {
+            scoreDetail.Add(new()
+            {
+                Ticker = ticker,
+                PiotroskiComputedValue = 0,
+                LastEarningsDate = new DateTime(1900, 1, 1).ToUniversalTime()
+            });
+        }
+        return scoreDetail;
+    }
+
+    private void PopulateBSValues(BalanceSheet balanceSheet, DerivedFinancials df)
     {
         if (balanceSheet.AnnualReports.Count >= 3)
         {
@@ -170,39 +254,12 @@ public class ScoreCompute
             {
                 df.PyWaSharesOutstanding = bs[OneYearOffSet + 1].CommonStockSharesOutstanding ?? 0;
             }
+            return;
         }
-    }
-
-    private async Task<List<IncomeStatement>> ReadAllIncomeStatementsAsync()
-    {
-        try
+        else
         {
-            List<IncomeStatement> incomeStatements = (await incomeStatementRepository.FindAll())
-                .ToList();
-            return incomeStatements;
+            computedValues[balanceSheet.Ticker] = 0;
         }
-        catch (Exception ex)
-        {
-            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
-            logger.LogError(ex.ToString());
-        }
-        return new List<IncomeStatement>();
-    }
-
-    private async Task<List<CashFlow>> ReadAllCashFlowsAsync()
-    {
-        try
-        {
-            List<CashFlow> cashFlows = (await cashFlowRepository.FindAll())
-               .ToList();
-            return cashFlows;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
-            logger.LogError(ex.ToString());
-        }
-        return new List<CashFlow>();
     }
 
     private async Task<List<BalanceSheet>> ReadAllBalanceSheetsAsync()
@@ -221,24 +278,55 @@ public class ScoreCompute
         return new List<BalanceSheet>();
     }
 
-    private static void FixZeroValues(DerivedFinancials df)
+    private async Task<List<CashFlow>> ReadAllCashFlowsAsync()
     {
-        decimal oneCent = 0.01M;
-        df.LongTermDebt = df.LongTermDebt == 0 ? oneCent : df.LongTermDebt;
-        df.TotalAssets = df.TotalAssets == 0 ? oneCent : df.TotalAssets;
-        df.CurrentAssets = df.CurrentAssets == 0 ? oneCent : df.CurrentAssets;
-        df.CurrentLiabilities = df.CurrentLiabilities == 0 ? oneCent : df.CurrentLiabilities;
-        df.PyLongTermDebt = df.PyLongTermDebt == 0 ? oneCent : df.PyLongTermDebt;
-        df.PyTotalAssets = df.PyTotalAssets == 0 ? oneCent : df.PyTotalAssets;
-        df.PyCurrentAssets = df.PyCurrentAssets == 0 ? oneCent : df.PyCurrentAssets;
-        df.PyPyTotalAssets = df.PyPyTotalAssets == 0 ? oneCent : df.PyPyTotalAssets;
-        df.WaSharesOutstanding = df.WaSharesOutstanding == 0 ? 1 : df.WaSharesOutstanding;
-        df.PyWaSharesOutstanding = df.PyWaSharesOutstanding == 0 ? 1 : df.PyWaSharesOutstanding;
-        df.CyRevenue = df.CyRevenue == 0 ? oneCent : df.CyRevenue;
-        df.PyRevenue = df.PyRevenue == 0 ? oneCent : df.PyRevenue;
-        df.CyGrossProfit = df.CyGrossProfit == 0 ? oneCent : df.CyGrossProfit;
-        df.PyGrossProfit = df.PyGrossProfit == 0 ? oneCent : df.PyGrossProfit;
-        df.CyNetIncome = df.CyNetIncome == 0 ? oneCent : df.CyNetIncome;
-        df.PyNetIncome = df.PyNetIncome == 0 ? oneCent : df.PyNetIncome;
+        try
+        {
+            List<CashFlow> cashFlows = (await cashFlowRepository.FindAll())
+               .ToList();
+            return cashFlows;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
+            logger.LogError(ex.ToString());
+        }
+        return new List<CashFlow>();
     }
+
+    private async Task<List<IncomeStatement>> ReadAllIncomeStatementsAsync()
+    {
+        try
+        {
+            List<IncomeStatement> incomeStatements = (await incomeStatementRepository.FindAll())
+                .ToList();
+            return incomeStatements;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to read balance sheet statements ScoreCompute:ReadAllCashFlowsAsync");
+            logger.LogError(ex.ToString());
+        }
+        return new List<IncomeStatement>();
+    }
+
+    private async Task<bool> SaveValuesToDb(List<ScoreDetail> scoreDetail)
+    {
+        try
+        {
+            //1. Truncate table
+            await scoreDetailRepository.Truncate();
+            //2. Add all values to database
+            await scoreDetailRepository.Add(scoreDetail);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to update table ScoreDetail in ScoreCompute:SaveValuesToDb");
+            logger.LogError(ex.ToString());
+            return false;
+        }
+    }
+
+    #endregion Private Methods
 }

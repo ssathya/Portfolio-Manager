@@ -9,20 +9,20 @@ public class ScoreDetail : Entity
 
     //From Other sources
     //Profitability
-    public bool NetIncome { get; set; }
+    public bool ReturnOnAssets { get; set; }
 
     public bool OperatingCashFlow { get; set; }
-    public bool ReturnOnAssets { get; set; }
-    public bool QualityOfEarnings { get; set; }
+    public bool IsROABetter { get; set; }
+    public bool Accruals { get; set; }
 
     //Leverage/Liquidity
-    public bool DecreasedLeverage { get; set; }
+    public bool ChangeInLeverage { get; set; }
 
-    public bool IncreasedLiquidity { get; set; }
-    public bool ZeroDilution { get; set; }
+    public bool ChangeInCurrentRatio { get; set; }
+    public bool ChangeInNumberOfShares { get; set; }
 
     //Operating Efficiency
-    public bool GrossMargin { get; set; }
+    public bool IncreaseGrossMargin { get; set; }
 
-    public bool AssetTurnOver { get; set; }
+    public bool AssetTurnoverRatio { get; set; }
 }

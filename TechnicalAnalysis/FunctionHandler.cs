@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using PsqlAccess;
 using PsqlAccess.SecListMaintain;
 using TechnicalAnalysis.Processing;
+using TechnicalAnalysis.Processing.Fundamental;
 
 namespace TechnicalAnalysis;
 
@@ -28,6 +29,7 @@ public class FunctionHandler
         ServiceProvider provider = services.BuildServiceProvider();
         logger = provider.GetService<ILogger<FunctionHandler>>();
         TechAnalProcessing? techAnalProcessing = provider.GetService<TechAnalProcessing>();
+        ScoreCompute? scoreCompute = provider.GetService<ScoreCompute>();
         if (logger == null)
         {
             Console.WriteLine("Unable to create logger object");
@@ -38,7 +40,13 @@ public class FunctionHandler
             logger.LogError("Could not create object TechAnalProcessing");
             return;
         }
+        if (scoreCompute == null)
+        {
+            logger.LogError("Could not create object ScoreCompute");
+            return;
+        }
         await techAnalProcessing.ExecAsync();
+        await scoreCompute.ExecAsync();
         return;
     }
 
@@ -62,5 +70,6 @@ public class FunctionHandler
         services.AddScoped<IHandleDataInDatabase, HandleDataInDatabase>();
         services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
         services.AddScoped<TechAnalProcessing>();
+        services.AddScoped<ScoreCompute>();
     }
 }

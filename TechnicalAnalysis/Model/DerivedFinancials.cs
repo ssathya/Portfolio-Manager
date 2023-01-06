@@ -2,7 +2,7 @@
 
 public class DerivedFinancials
 {
-    public string Symbol { get; set; } = string.Empty;
+    public string Ticker { get; set; } = string.Empty;
     public DateTime LastFiscalDateEnding { get; set; }
 
     //Balance sheet values

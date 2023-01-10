@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using System.Text;
 
 namespace AppCommon.Services;
 
@@ -17,7 +18,7 @@ public static class ServiceHandler
         services.AddSingleton<IConfiguration>(_ => Configuration);
 
         //Logger
-        SetupLogger(services, Configuration);
+        SetupLogger(services, Configuration, applicationName);
         //Setup db connection
         SetupDatabaseConnection(services, Configuration);
 
@@ -53,12 +54,18 @@ public static class ServiceHandler
         return Configuration;
     }
 
-    private static void SetupLogger(IServiceCollection services, IConfiguration configuration)
+    private static void SetupLogger(IServiceCollection services, IConfiguration configuration, string applicationName)
     {
+        StringBuilder filePath = new();
+        filePath.Append(Path.GetTempPath() + "/");
+        var today = DateTime.Now.ToString("MM-dd-yyyy");
+        filePath.Append($"{applicationName}-{today}.log");
+        //string filePath = Path.GetTempPath();
+
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
-            .WriteTo.Console()
+            .WriteTo.File(filePath.ToString(), retainedFileCountLimit: 4)
             .CreateLogger();
         services.AddLogging(c =>
         {

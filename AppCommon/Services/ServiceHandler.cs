@@ -1,7 +1,9 @@
 ﻿using AppCommon.CacheHandler;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PsqlAccess;
 using Serilog;
 using System.Text;
 
@@ -54,7 +56,7 @@ public static class ServiceHandler
         return Configuration;
     }
 
-    private static void SetupLogger(IServiceCollection services, IConfiguration configuration, string applicationName)
+    public static void SetupLogger(IServiceCollection services, IConfiguration configuration, string applicationName)
     {
         StringBuilder filePath = new();
         filePath.Append(Path.GetTempPath() + "/");
@@ -75,12 +77,18 @@ public static class ServiceHandler
         Log.Logger.Information("Application starting...");
     }
 
-    private static void SetupDatabaseConnection(IServiceCollection services, IConfiguration configuration)
+    public static void SetupDatabaseConnection(IServiceCollection services, IConfiguration configuration, bool forceConnect = false)
     {
         string? connectionString = configuration["ConnectionString:DefaultConnection"];
         if (connectionString == null)
         {
+            Console.WriteLine("Unable to get connection string");
             return;
+        }
+        if (forceConnect && !string.IsNullOrEmpty(connectionString))
+        {
+            services.AddDbContextFactory<AppDbContext>(options =>
+                options.UseNpgsql(connectionString));
         }
     }
 }

@@ -1,0 +1,21 @@
+﻿@page "/securities"
+@using Presentation.ViewModel;
+<h4>Securities</h4>
+<DataGrid TItem="SecurityDetails"
+          Data="@indexComponents"
+          @bind-SelectedRow="@selectedIC"
+          ShowPager
+          PageSize="10"
+          Filterable
+          Resizable
+          FixedHeader
+           Responsive>
+    <DataGridCommandColumn />
+    <DataGridColumn Field="@nameof(SecurityDetails.Ticker)" Caption="Symbol" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.CompanyName)" Caption="Security" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.Sector)" Caption="Sector" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.SubSector)" Caption="Sub-Security" Sortable="true" />
+    <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInSnP)" Caption="S&P 500" Sortable="true" />
+    <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInNasdaq)" Caption="NASDAQ-100" Sortable="true" />
+    <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInDow)" Caption="DOW-30" Sortable="true" />
+</DataGrid>

@@ -8,7 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.1.5" />
+    <PackageReference Include="Blazorise.DataGrid" Version="1.1.5" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppCommon\AppCommon.csproj" />
+    <ProjectReference Include="..\..\ApplicationModels\ApplicationModels.csproj" />
+    <ProjectReference Include="..\..\Plugins\PsqlAccess\PsqlAccess.csproj" />
   </ItemGroup>
 
 </Project>

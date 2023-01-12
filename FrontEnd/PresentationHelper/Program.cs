@@ -36,5 +36,5 @@ app.Run();
 
 void SetupDI(IServiceCollection services)
 {
-    services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
+    services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 }

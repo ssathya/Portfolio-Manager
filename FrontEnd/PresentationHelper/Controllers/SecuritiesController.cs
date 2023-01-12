@@ -5,7 +5,7 @@ using PsqlAccess;
 namespace PresentationHelper.Controllers;
 
 [ApiController]
-[Route("[Controller]")]
+[Route("api/[Controller]")]
 public class SecuritiesController : ControllerBase
 {
     private readonly ILogger<SecuritiesController> logger;

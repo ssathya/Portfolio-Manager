@@ -1,4 +1,5 @@
 ﻿using ApplicationModels.Indexes;
+using ApplicationModels.Views;
 
 namespace Presentation.ViewModel;
 
@@ -13,8 +14,10 @@ public class SecurityDetails
     public bool ListedInSnP { get; set; }
     public bool ListedInNasdaq { get; set; }
     public bool ListedInDow { get; set; }
+    public int PiotroskiComputedValue { get; set; }
+    public int SimFinRating { get; set; }
 
-    public static implicit operator SecurityDetails(IndexComponent ic)
+    public static implicit operator SecurityDetails(SecurityWithPScore ic)
     {
         return new SecurityDetails
         {
@@ -26,7 +29,9 @@ public class SecurityDetails
             ListedInIndex = ic.ListedInIndex,
             ListedInSnP = ic.ListedInIndex.HasFlag(IndexNames.SnP),
             ListedInDow = ic.ListedInIndex.HasFlag(IndexNames.Dow),
-            ListedInNasdaq = ic.ListedInIndex.HasFlag(IndexNames.Nasdaq)
+            ListedInNasdaq = ic.ListedInIndex.HasFlag(IndexNames.Nasdaq),
+            PiotroskiComputedValue = ic.PiotroskiComputedValue ?? 0,
+            SimFinRating = ic.SimFinRating ?? 0
         };
     }
 }

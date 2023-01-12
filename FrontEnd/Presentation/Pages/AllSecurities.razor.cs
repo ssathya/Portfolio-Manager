@@ -1,4 +1,5 @@
 ﻿using ApplicationModels.Indexes;
+using ApplicationModels.Views;
 using Microsoft.AspNetCore.Components;
 using Presentation.ViewModel;
 
@@ -18,7 +19,7 @@ public partial class AllSecurities
         {
             return;
         }
-        List<IndexComponent>? dataInDb = await Client.GetFromJsonAsync<List<IndexComponent>>("Securities");
+        List<SecurityWithPScore>? dataInDb = await Client.GetFromJsonAsync<List<SecurityWithPScore>>("api/SecurityWithPScores");
         if (dataInDb == null)
         {
             return;
@@ -28,42 +29,4 @@ public partial class AllSecurities
             indexComponents.Add(ic);
         }
     }
-
-    //protected override void OnInitialized()
-    //{
-    //    int i = 0;
-    //    indexComponents.Add(new()
-    //    {
-    //        Id = i++,
-    //        CompanyName = "3M",
-    //        Sector = "Industrials",
-    //        SubSector = "Industrial Conglomerates",
-    //        Ticker = "MMM",
-    //        ListedInSnP = true,
-    //        ListedInDow = false,
-    //        ListedInNasdaq = false
-    //    });
-    //    indexComponents.Add(new()
-    //    {
-    //        Id = i++,
-    //        CompanyName = "A.O.Smith",
-    //        Sector = "Industrials",
-    //        SubSector = "Building Products",
-    //        Ticker = "AOS",
-    //        ListedInSnP = true,
-    //        ListedInDow = false,
-    //        ListedInNasdaq = false
-    //    });
-    //    indexComponents.Add(new()
-    //    {
-    //        Id = i++,
-    //        CompanyName = "Microsoft",
-    //        Sector = "Information Technology",
-    //        SubSector = "Systems Software",
-    //        Ticker = "MSFT",
-    //        ListedInSnP = true,
-    //        ListedInDow = true,
-    //        ListedInNasdaq = true
-    //    });
-    //}
 }

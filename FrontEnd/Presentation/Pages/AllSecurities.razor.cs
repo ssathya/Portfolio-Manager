@@ -9,6 +9,8 @@ public partial class AllSecurities
 {
     private List<SecurityDetails> indexComponents = new();
     private SecurityDetails selectedIC = new();
+    protected int selectedPScore;
+    protected decimal selectedDV;
 
     [Inject]
     public HttpClient? Client { get; set; }
@@ -42,5 +44,23 @@ public partial class AllSecurities
                 secDetail.DollarVolume = dollarVolume.Value;
             }
         }
+    }
+
+    protected bool OnPScoreFilter(object itemValue, object passedValue)
+    {
+        if (passedValue == null || itemValue == null)
+        {
+            return true;
+        }
+        return ((int)itemValue >= (int)passedValue);
+    }
+
+    protected bool OnDvFilter(object itemValue, object passedValue)
+    {
+        if (passedValue == null || itemValue == null)
+        {
+            return true;
+        }
+        return ((decimal)itemValue >= (decimal)passedValue);
     }
 }

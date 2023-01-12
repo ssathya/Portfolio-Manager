@@ -46,7 +46,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("Computes");
+                    b.ToTable("Computes", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.Compute.ScoreDetail", b =>
@@ -101,7 +101,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("ScoreDetails");
+                    b.ToTable("ScoreDetails", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.EarningsCal.EarningsCalExceptions", b =>
@@ -127,7 +127,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EarningsCalExceptions");
+                    b.ToTable("EarningsCalExceptions", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.EarningsCal.EarningsCalendar", b =>
@@ -161,7 +161,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("EarningsCalendars");
+                    b.ToTable("EarningsCalendars", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.FinancialStatement.AlphaVantage.BalanceSheet", b =>
@@ -188,7 +188,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("BalanceSheets");
+                    b.ToTable("BalanceSheets", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.FinancialStatement.AlphaVantage.CashFlow", b =>
@@ -215,7 +215,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("CashFlows");
+                    b.ToTable("CashFlows", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.FinancialStatement.AlphaVantage.IncomeStatement", b =>
@@ -242,7 +242,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("IncomeStatements");
+                    b.ToTable("IncomeStatements", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.FinancialStatement.AlphaVantage.Overview", b =>
@@ -447,7 +447,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("Overviews");
+                    b.ToTable("Overviews", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.FinancialStatement.FinStatements", b =>
@@ -536,7 +536,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("FinStatements");
+                    b.ToTable("FinStatements", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.Indexes.IndexComponent", b =>
@@ -570,7 +570,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("IndexComponents");
+                    b.ToTable("IndexComponents", (string)null);
                 });
 
             modelBuilder.Entity("ApplicationModels.Quotes.YPrice", b =>
@@ -596,7 +596,7 @@ namespace PsqlAccess.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("YPrices");
+                    b.ToTable("YPrices", (string)null);
                 });
 #pragma warning restore 612, 618
         }

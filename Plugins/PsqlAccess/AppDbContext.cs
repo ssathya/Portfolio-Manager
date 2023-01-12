@@ -4,6 +4,7 @@ using ApplicationModels.FinancialStatement;
 using ApplicationModels.FinancialStatement.AlphaVantage;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
+using ApplicationModels.Views;
 using Microsoft.EntityFrameworkCore;
 
 namespace PsqlAccess;
@@ -33,6 +34,7 @@ public class AppDbContext : DbContext
     public DbSet<BalanceSheet> BalanceSheets { get; set; }
     public DbSet<IncomeStatement> IncomeStatements { get; set; }
     public DbSet<CashFlow> CashFlows { get; set; }
+    public DbSet<SecurityWithPScore> SecurityWithPScores { get; set; }
 
     #endregion Public Properties
 
@@ -51,6 +53,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<BalanceSheet>().HasIndex(p => p.Ticker);
         modelBuilder.Entity<IncomeStatement>().HasIndex(p => p.Ticker);
         modelBuilder.Entity<CashFlow>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<SecurityWithPScore>(c =>
+        {
+            c.HasNoKey();
+            c.ToView("SecurityWithPScores");
+        });
     }
 
     #endregion Protected Methods

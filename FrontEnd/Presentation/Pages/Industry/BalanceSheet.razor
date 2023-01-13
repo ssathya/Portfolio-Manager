@@ -1,0 +1,29 @@
+﻿<h3>Balance sheet</h3>
+<Table Striped>
+    <TableBody>
+        <TableRow>
+            <TableRowCell>Ticker</TableRowCell>
+            <TableRowCell>@CompanyBS.Ticker</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Total Assets</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.TotalAssets ?? 0)</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Total Liabilities</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.TotalLiabilities ?? 0)</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Stocks Outstanding</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.CommonStockSharesOutstanding ?? 0)</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Deferred Revenue</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.DeferredRevenue ?? 0)</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Stocks Outstanding</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.CommonStockSharesOutstanding ?? 0)</TableRowCell>
+        </TableRow>
+    </TableBody>
+</Table>

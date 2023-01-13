@@ -2,11 +2,11 @@
 @using Presentation.ViewModel;
 <h4>Securities</h4>
 <DataGrid TItem="SecurityDetails"
-          Data="@indexComponents"
-          @bind-SelectedRow="@selectedIC"
+          Data="@indexComponents"          
           ShowPager
           PageSize="10"
           Filterable
+          SelectedRowChanged="OnSelectedRowChangedAsync"
           Resizable
           FixedHeader
            Responsive>
@@ -18,6 +18,50 @@
     <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInSnP)" Caption="S&P 500" Sortable="true" />
     <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInNasdaq)" Caption="NASDAQ-100" Sortable="true" />
     <DataGridCheckColumn Field="@nameof(SecurityDetails.ListedInDow)" Caption="DOW-30" Sortable="true" />
-    <DataGridColumn Field="@nameof(SecurityDetails.PiotroskiComputedValue)" Caption="P-F Score" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.PiotroskiComputedValue)" CustomFilter="@OnPScoreFilter" Caption="P-F Score" Sortable="true" >
+        <FilterTemplate>
+            <Select TValue="int" SelectedValue="@selectedPScore" SelectedValueChanged="@(value=>{selectedPScore=value; context.TriggerFilterChange( selectedPScore ); })">                
+                <SelectItem Value="@(0)">All</SelectItem>
+                <SelectItem Value="@(9)">9</SelectItem>
+                <SelectItem Value="@(8)">8 or better</SelectItem>
+                <SelectItem Value="@(7)">7 or better</SelectItem>
+                <SelectItem Value="@(6)">6 or better</SelectItem>
+                <SelectItem Value="@(5)">5 or better</SelectItem>
+                </Select>
+        </FilterTemplate>
+    </DataGridColumn>
     <DataGridColumn Field="@nameof(SecurityDetails.SimFinRating)" Caption="P-F Score(external)" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.DollarVolume)" DisplayFormat="{0:C0}" CustomFilter="@OnDvFilter" Caption="Dollar Volume" Sortable="true">
+        <FilterTemplate>
+            <Select TValue="decimal" SelectedValue="@selectedDV" SelectedValueChanged="@(value=>{selectedDV=value; context.TriggerFilterChange( selectedDV ); })">
+                <SelectItem Value="@(0)">All</SelectItem>
+                <SelectItem Value="@(100000000M)">100MM or more</SelectItem>
+                <SelectItem Value="@(250000000M)">250MM or more</SelectItem>
+                <SelectItem Value="@(500000000M)">500MM or more</SelectItem>
+                </Select>
+        </FilterTemplate>
+    </DataGridColumn>
 </DataGrid>
+
+@if(DisplaySubPages)
+{
+    <Row HorizontalGutter="32" VerticalGutter="16">
+        <Column ColumnSize="ColumnSize.Is6">
+            <Alert Color="Color.Primary" Visible>
+            <Overview SelectedTicker="@selectedIC.Ticker"/>
+            </Alert>
+        </Column>
+        <Column ColumnSize="ColumnSize.Is6">
+            <Alert Color="Color.Primary" Visible>
+                <PriceChart SelectedTicker="@selectedIC.Ticker" />
+            </Alert>
+        </Column>
+    </Row>
+    <Row HorizontalGutter="32" VerticalGutter="16">
+            <Column ColumnSize="ColumnSize.Is6">
+            <Alert Color="Color.Primary" Visible>
+                <BalanceSheet SelectedTicker="@selectedIC.Ticker"/>
+                </Alert>
+            </Column>
+    </Row>
+}

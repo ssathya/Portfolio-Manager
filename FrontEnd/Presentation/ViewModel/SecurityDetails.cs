@@ -16,6 +16,7 @@ public class SecurityDetails
     public bool ListedInDow { get; set; }
     public int PiotroskiComputedValue { get; set; }
     public int SimFinRating { get; set; }
+    public decimal DollarVolume { get; set; }
 
     public static implicit operator SecurityDetails(SecurityWithPScore ic)
     {

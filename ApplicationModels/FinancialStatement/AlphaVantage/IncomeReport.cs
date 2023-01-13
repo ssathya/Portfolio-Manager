@@ -8,7 +8,7 @@ public class IncomeReport
     public DateTime FiscalDateEnding { get; set; }
 
     [JsonProperty("reportedCurrency")]
-    public string ReportedCurrency { get; set; }
+    public string ReportedCurrency { get; set; } = string.Empty;
 
     [JsonProperty("grossProfit")]
     public decimal? GrossProfit { get; set; }

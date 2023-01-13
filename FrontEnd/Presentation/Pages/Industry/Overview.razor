@@ -1,0 +1,37 @@
+﻿<Table Striped>
+    <TableBody>
+       <TableRow>
+            <TableRowCell>Ticker</TableRowCell>
+            <TableRowCell>@CompanyProfile.Ticker</TableRowCell>            
+       </TableRow>
+        <TableRow>
+            <TableRowCell>Name</TableRowCell>
+            <TableRowCell>@CompanyProfile.Name</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Description</TableRowCell>
+            <TableRowCell>@CompanyProfile.Description</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Fiscal Year End</TableRowCell>
+            <TableRowCell>@CompanyProfile.FiscalYearEnd</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Latest Quarter</TableRowCell>
+            <TableRowCell>@CompanyProfile.LatestQuarter?.ToString("yyyy-MM-dd")</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Market Cap</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB((double)(CompanyProfile.MarketCapitalization??0))</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>EBITDA</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB((double)(CompanyProfile.EBITDA??0))</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>P.E. Ratio</TableRowCell>
+            <TableRowCell>@StringHelper.ToKMB((double)(CompanyProfile.PERatio??0))</TableRowCell>
+        </TableRow>
+    </TableBody>
+
+</Table>

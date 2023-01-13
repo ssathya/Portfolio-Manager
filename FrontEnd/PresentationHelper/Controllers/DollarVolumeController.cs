@@ -33,8 +33,9 @@ public class DollarVolumeController : ControllerBase
         {
             IEnumerable<decimal> selValues = priceRcd.CompressedQuotes
                 .OrderBy(x => x.Date)
-                .Select(x => (x.ClosingPrice * x.Volume))
-                .TakeLast(daysToCompute);
+                .Take(daysToCompute)
+                .Select(x => (x.ClosingPrice * x.Volume));
+
             dollarVolumes.Add(new DollarVolume
             {
                 Ticker = priceRcd.Ticker,
@@ -57,14 +58,14 @@ public class DollarVolumeController : ControllerBase
             logger.LogInformation($"Price for security {ticker} not in database");
             return NotFound();
         }
-        IEnumerable<decimal> selValues = priceForSecurity.CompressedQuotes
-             .OrderBy(x => x.Date)
-             .Select(x => (x.ClosingPrice * x.Volume))
-             .TakeLast(daysToCompute);
-        DollarVolume dollarVolume = new DollarVolume
+        DollarVolume dollarVolume = new()
         {
             Ticker = priceForSecurity.Ticker,
-            Value = (selValues.Sum() / daysToCompute)
+            Value = priceForSecurity.CompressedQuotes
+             .OrderBy(x => x.Date)
+             .Select(x => (x.ClosingPrice * x.Volume))
+             .TakeLast(daysToCompute)
+             .Sum() / daysToCompute
         };
         return Ok(dollarVolume);
     }

@@ -11,6 +11,7 @@ public partial class AllSecurities
     private SecurityDetails selectedIC = new();
     protected int selectedPScore;
     protected decimal selectedDV;
+    protected bool DisplaySubPages;
 
     [Inject]
     public HttpClient? Client { get; set; }
@@ -22,7 +23,6 @@ public partial class AllSecurities
             return;
         }
         List<SecurityWithPScore>? dataInDb = await Client.GetFromJsonAsync<List<SecurityWithPScore>>("api/SecurityWithPScores");
-        //List<YPrice>? yPrices = await Client.GetFromJsonAsync<List<YPrice>>("api/Price");
         List<DollarVolume>? dollarVolumes = await Client.GetFromJsonAsync<List<DollarVolume>>("api/DollarVolume");
 
         dollarVolumes ??= new();
@@ -62,5 +62,12 @@ public partial class AllSecurities
             return true;
         }
         return ((decimal)itemValue >= (decimal)passedValue);
+    }
+
+    protected Task OnSelectedRowChangedAsync(SecurityDetails securityDetails)
+    {
+        selectedIC = securityDetails;
+        DisplaySubPages = true;
+        return Task.CompletedTask;
     }
 }

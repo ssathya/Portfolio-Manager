@@ -2,11 +2,11 @@
 @using Presentation.ViewModel;
 <h4>Securities</h4>
 <DataGrid TItem="SecurityDetails"
-          Data="@indexComponents"
-          @bind-SelectedRow="@selectedIC"
+          Data="@indexComponents"          
           ShowPager
           PageSize="10"
           Filterable
+          SelectedRowChanged="OnSelectedRowChangedAsync"
           Resizable
           FixedHeader
            Responsive>
@@ -42,3 +42,19 @@
         </FilterTemplate>
     </DataGridColumn>
 </DataGrid>
+
+@if(DisplaySubPages)
+{
+    <Row HorizontalGutter="32" VerticalGutter="16">
+        <Column ColumnSize="ColumnSize.Is6">
+            <Alert Color="Color.Primary" Visible>
+            <Overview SelectedTicker="@selectedIC.Ticker"/>
+            </Alert>
+        </Column>
+        <Column ColumnSize="ColumnSize.Is6">
+            <Alert Color="Color.Primary" Visible>
+                <PriceChart SelectedTicker="@selectedIC.Ticker" />
+            </Alert>
+        </Column>
+    </Row>
+}

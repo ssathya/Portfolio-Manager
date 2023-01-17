@@ -35,6 +35,7 @@ public class AppDbContext : DbContext
     public DbSet<IncomeStatement> IncomeStatements { get; set; }
     public DbSet<CashFlow> CashFlows { get; set; }
     public DbSet<SecurityWithPScore> SecurityWithPScores { get; set; }
+    public DbSet<MomMfDolAvg> MomMfDolAvgs { get; set; }
 
     #endregion Public Properties
 
@@ -58,6 +59,7 @@ public class AppDbContext : DbContext
             c.HasNoKey();
             c.ToView("SecurityWithPScores");
         });
+        modelBuilder.Entity<MomMfDolAvg>().HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

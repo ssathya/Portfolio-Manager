@@ -1,5 +1,4 @@
 ﻿using ApplicationModels.Compute;
-using ApplicationModels.FinancialStatement;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
 using Microsoft.Extensions.Logging;
@@ -11,12 +10,13 @@ public class TechAnalProcessing
 {
     private const int ApproxWorkingDaysInAYear = 252;
     private const int BatchSize = 100;
+    private const int DollorVolumeDays = 20;
     private const int MomentumWindow = 125;
     private const int MoneyFlowOffset = 14;
     private readonly IRepository<Compute> computeRepository;
-    private readonly IRepository<FinStatements> finStatementRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
+    private readonly IRepository<MomMfDolAvg> summaryRepository;
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
@@ -24,11 +24,11 @@ public class TechAnalProcessing
     public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
         , IRepository<Compute> computeRepository
-        , IRepository<FinStatements> finStatementRepository
+        , IRepository<MomMfDolAvg> summaryRepository
         , ILogger<TechAnalProcessing> logger)
     {
         this.computeRepository = computeRepository;
-        this.finStatementRepository = finStatementRepository;
+        this.summaryRepository = summaryRepository;
         this.idxRepository = idxRepository;
         this.logger = logger;
         this.yRepository = yRepository;
@@ -48,42 +48,6 @@ public class TechAnalProcessing
         await ComputeMomentumAndMoneyFlow(tickers);
 
         return true;
-    }
-
-    private async Task ComputeMomentumAndMoneyFlow(List<string> tickers)
-    {
-        await computeRepository.Truncate();
-        List<Compute> momentum = new();
-        int counter = 0;
-        foreach (var ticker in tickers)
-        {
-            List<CompressedQuote> yQuotes = await ObtainQuotesForTicker(ticker);
-            if (yQuotes == null || yQuotes.Count == 0)
-            {
-                logger.LogInformation($"Could not prices for {ticker}");
-                continue;
-            }
-            Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
-            if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
-            {
-                ComputeMoneyFlow(yQuotes, momentumsForTicker);
-                momentum.Add(momentumsForTicker);
-                counter++;
-            }
-            else
-            {
-                logger.LogInformation($"Could not compute momentum for {ticker}");
-            }
-            if (counter % BatchSize == 0)
-            {
-                await SaveValuesToDatabase(momentum);
-                momentum.Clear();
-            }
-        }
-        if (momentum.Any())
-        {
-            await SaveValuesToDatabase(momentum);
-        }
     }
 
     private static void ComputeMoneyFlow(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
@@ -135,6 +99,16 @@ public class TechAnalProcessing
         }
     }
 
+    private decimal ComputeDollarVolume(YPrice pricesForTicker)
+    {
+        var twentyDayValue = pricesForTicker.CompressedQuotes
+            .OrderBy(r => r.Date)
+            .TakeLast(DollorVolumeDays)
+            .Select(r => (r.ClosingPrice * r.Volume))
+            .Sum();
+        return twentyDayValue / DollorVolumeDays;
+    }
+
     private Compute ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
     {
         Compute momentumValues = new();
@@ -168,6 +142,61 @@ public class TechAnalProcessing
             });
         }
         return momentumValues;
+    }
+
+    private async Task ComputeMomentumAndMoneyFlow(List<string> tickers)
+    {
+        await computeRepository.Truncate();
+        await summaryRepository.Truncate();
+        List<Compute> momentum = new();
+        List<MomMfDolAvg> momMfDolAvgs = new();
+        int counter = 0;
+        foreach (var ticker in tickers)
+        {
+            List<CompressedQuote> yQuotes = await ObtainQuotesForTicker(ticker);
+            if (yQuotes == null || yQuotes.Count == 0)
+            {
+                logger.LogInformation($"Could not prices for {ticker}");
+                continue;
+            }
+            Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
+            if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
+            {
+                ComputeMoneyFlow(yQuotes, momentumsForTicker);
+                var pricesForTicker = yPrices.First(r => r.Ticker == ticker);
+                decimal dollarVolume = 0;
+                if (pricesForTicker != null)
+                {
+                    dollarVolume = ComputeDollarVolume(pricesForTicker);
+                }
+                momentum.Add(momentumsForTicker);
+                ComputedValues tmpValues = momentumsForTicker.ComputedValues.OrderBy(r => r.ReportingDate).Last();
+                momMfDolAvgs.Add(new()
+                {
+                    Ticker = ticker,
+                    DollarVolume = dollarVolume,
+                    Momentum = tmpValues.MomentumValue,
+                    MoneyFlow = tmpValues.MoneyFlow
+                });
+                counter++;
+            }
+            else
+            {
+                logger.LogInformation($"Could not compute momentum for {ticker}");
+            }
+            if (counter % BatchSize == 0)
+            {
+                await SaveValuesToDatabase(momentum);
+                await SaveValuesToDatabase(momMfDolAvgs);
+                momentum.Clear();
+                momMfDolAvgs.Clear();
+            }
+        }
+        if (momentum.Any())
+        {
+            await SaveValuesToDatabase(momentum);
+            await SaveValuesToDatabase(momMfDolAvgs);
+        }
     }
 
     private async Task<List<CompressedQuote>> ObtainQuotesForTicker(string ticker)
@@ -211,6 +240,19 @@ public class TechAnalProcessing
             logger.LogError($"Exception while getting all tickers to process ObtainTickersToProcessAsync");
             logger.LogError($"{ex.Message}");
             return new List<string>();
+        }
+    }
+
+    private async Task SaveValuesToDatabase(List<MomMfDolAvg> momMfDolAvgs)
+    {
+        try
+        {
+            await summaryRepository.Add(momMfDolAvgs);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Unable to update database with new values SaveValuesToDatabase");
+            logger.LogError($"{ex.Message}");
         }
     }
 

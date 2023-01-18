@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Presentation.ViewModel;
 using ExtData = ApplicationModels.FinancialStatement.AlphaVantage;
 
 namespace Presentation.Pages.Industry;
@@ -18,6 +19,9 @@ public partial class Overview
 
     [Parameter]
     public string SelectedTicker { get; set; } = string.Empty;
+
+    [Parameter]
+    public SecurityDetails securityDetails { get; set; } = new();
 
     #endregion Public Properties
 

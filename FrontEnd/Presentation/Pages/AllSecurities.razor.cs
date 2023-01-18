@@ -1,5 +1,4 @@
 ﻿using ApplicationModels.Compute;
-using ApplicationModels.Quotes;
 using ApplicationModels.Views;
 using Microsoft.AspNetCore.Components;
 using Presentation.ViewModel;

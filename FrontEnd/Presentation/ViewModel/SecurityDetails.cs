@@ -17,6 +17,8 @@ public class SecurityDetails
     public int PiotroskiComputedValue { get; set; }
     public int SimFinRating { get; set; }
     public decimal DollarVolume { get; set; }
+    public decimal Momentum { get; set; }
+    public decimal MoneyFlow { get; set; }
 
     public static implicit operator SecurityDetails(SecurityWithPScore ic)
     {

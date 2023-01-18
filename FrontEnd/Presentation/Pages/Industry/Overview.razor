@@ -1,10 +1,10 @@
 ﻿<h3>Overview of @CompanyProfile.Name</h3>
 <Table Striped>
     <TableBody>
-       <TableRow>
+        <TableRow>
             <TableRowCell>Ticker</TableRowCell>
-            <TableRowCell>@CompanyProfile.Ticker</TableRowCell>            
-       </TableRow>
+            <TableRowCell>@CompanyProfile.Ticker</TableRowCell>
+        </TableRow>
         <TableRow>
             <TableRowCell>Name</TableRowCell>
             <TableRowCell>@CompanyProfile.Name</TableRowCell>
@@ -32,6 +32,43 @@
         <TableRow>
             <TableRowCell>P.E. Ratio</TableRowCell>
             <TableRowCell>@StringHelper.ToKMB((double)(CompanyProfile.PERatio??0))</TableRowCell>
+        </TableRow>
+        <TableRow>
+            <TableRowCell>Indexes</TableRowCell>
+            <TableRowCell>
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is4">
+                        @if (securityDetails.ListedInSnP)
+                        {
+                            <Badge Color="Color.Success">S &amp; P 500</Badge>
+                        }
+                        else
+                        {
+                            <Badge Color="Color.Secondary">S &amp; P 500</Badge>
+                        }
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is4">
+                        @if (securityDetails.ListedInDow)
+                        {
+                            <Badge Color="Color.Success">DOW-30</Badge>
+                        }
+                        else
+                        {
+                            <Badge Color="Color.Secondary">DOW-30</Badge>
+                        }
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is4">
+                        @if (securityDetails.ListedInNasdaq)
+                        {
+                            <Badge Color="Color.Success">NASDAQ-100</Badge>
+                        }
+                        else
+                        {
+                            <Badge Color="Color.Secondary">NASDAQ-100</Badge>
+                        }
+                    </Column>
+                </Row>
+            </TableRowCell>
         </TableRow>
     </TableBody>
 

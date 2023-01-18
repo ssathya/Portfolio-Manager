@@ -1,4 +1,5 @@
-﻿using ApplicationModels.Quotes;
+﻿using ApplicationModels.Compute;
+using ApplicationModels.Quotes;
 using ApplicationModels.Views;
 using Microsoft.AspNetCore.Components;
 using Presentation.ViewModel;
@@ -10,7 +11,7 @@ public partial class AllSecurities
     private List<SecurityDetails> indexComponents = new();
     private SecurityDetails selectedIC = new();
     protected int selectedPScore;
-    protected decimal selectedDV;
+    protected decimal selectedDV, selectedMom, selectedMF;
     protected bool DisplaySubPages;
 
     [Inject]
@@ -23,9 +24,9 @@ public partial class AllSecurities
             return;
         }
         List<SecurityWithPScore>? dataInDb = await Client.GetFromJsonAsync<List<SecurityWithPScore>>("api/SecurityWithPScores");
-        List<DollarVolume>? dollarVolumes = await Client.GetFromJsonAsync<List<DollarVolume>>("api/DollarVolume");
+        List<MomMfDolAvg>? momMfDolAvgs = await Client.GetFromJsonAsync<List<MomMfDolAvg>>("api/MomMfDolAvgs");
+        momMfDolAvgs ??= new();
 
-        dollarVolumes ??= new();
         if (dataInDb == null)
         {
             return;
@@ -38,10 +39,12 @@ public partial class AllSecurities
             {
                 continue;
             }
-            var dollarVolume = dollarVolumes.Where(x => x.Ticker == secDetail.Ticker).FirstOrDefault();
-            if (dollarVolume != null)
+            MomMfDolAvg? mfDolAvgs = momMfDolAvgs.FirstOrDefault(x => x.Ticker == secDetail.Ticker);
+            if (mfDolAvgs != null)
             {
-                secDetail.DollarVolume = dollarVolume.Value;
+                secDetail.DollarVolume = mfDolAvgs.DollarVolume;
+                secDetail.Momentum = mfDolAvgs.Momentum;
+                secDetail.MoneyFlow = mfDolAvgs.MoneyFlow;
             }
         }
     }

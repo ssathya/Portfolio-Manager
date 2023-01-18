@@ -60,14 +60,15 @@ public static class ServiceHandler
     {
         StringBuilder filePath = new();
         filePath.Append(Path.GetTempPath() + "/");
-        var today = DateTime.Now.ToString("MM-dd-yyyy");
-        filePath.Append($"{applicationName}-{today}.log");
+        var today = DateTime.Now.ToString("yyyyMMdd");
+        filePath.Append($"{applicationName}-.log");
         //string filePath = Path.GetTempPath();
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
-            .WriteTo.File(filePath.ToString(), retainedFileCountLimit: 4)
+            .WriteTo.Console()
+            .WriteTo.RollingFile(filePath.ToString(), retainedFileCountLimit: 4)
             .CreateLogger();
         services.AddLogging(c =>
         {

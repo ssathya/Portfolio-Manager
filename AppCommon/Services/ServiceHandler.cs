@@ -60,7 +60,7 @@ public static class ServiceHandler
     {
         StringBuilder filePath = new();
         filePath.Append(Path.GetTempPath() + "/");
-        var today = DateTime.Now.ToString("yyyyMMdd");
+        //var today = DateTime.Now.ToString("yyyyMMdd");
         filePath.Append($"{applicationName}-.log");
         //string filePath = Path.GetTempPath();
 

@@ -1,0 +1,15 @@
+﻿
+<Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+    <Items>
+        <Tab Name="momentum">Momentum</Tab>
+        <Tab Name="moneyFlow">Money Flow</Tab>
+    </Items>
+    <Content>
+        <TabPanel Name="momentum">
+            <LineChart @ref="momentumChart" TItem="decimal"/>
+        </TabPanel>
+        <TabPanel Name="moneyFlow">
+            <LineChart @ref="moneyFlowChart" TItem="decimal"/>
+        </TabPanel>
+    </Content>
+</Tabs>

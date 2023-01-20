@@ -1,6 +1,7 @@
 using AppCommon.Services;
 using PsqlAccess.SecListMaintain;
 using PsqlAccess;
+using OfficeOpenXml;
 
 const string ApplicationName = "PresentationHelper";
 
@@ -16,6 +17,7 @@ IConfiguration? Configuration = ServiceHandler.GetConfiguration(ApplicationName)
 ServiceHandler.SetupDatabaseConnection(builder.Services, Configuration, forceConnect: true);
 ServiceHandler.SetupLogger(builder.Services, Configuration, ApplicationName);
 SetupDI(builder.Services);
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 var app = builder.Build();
 

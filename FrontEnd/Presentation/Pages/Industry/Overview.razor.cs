@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
-using Presentation.ViewModel;
+﻿using ApplicationModels.ViewModel;
+using Microsoft.AspNetCore.Components;
 using ExtData = ApplicationModels.FinancialStatement.AlphaVantage;
 
 namespace Presentation.Pages.Industry;

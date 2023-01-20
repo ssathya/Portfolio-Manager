@@ -1,10 +1,11 @@
 using AppCommon.Services;
+using BlazorDownloadFile;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using Presentation.Data;
-using PsqlAccess.SecListMaintain;
 using PsqlAccess;
+using PsqlAccess.SecListMaintain;
 
 const string ApplicationName = "Presentation";
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,7 @@ builder.Services
     })
     .AddBootstrap5Providers()
     .AddFontAwesomeIcons();
+builder.Services.AddBlazorDownloadFile(ServiceLifetime.Scoped);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

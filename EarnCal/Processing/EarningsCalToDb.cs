@@ -105,7 +105,7 @@ public class EarningsCalToDb
     {
         List<string> existingTickers = existingRecords.Select(x => x.Ticker).ToList();
         tickersToProcess = tickersToProcess.Except(existingTickers).ToList();
-        var defaultDate = new DateTime(1900, 1, 1).ToUniversalTime();
+        var defaultDate = new DateTime(2100, 1, 1).ToUniversalTime();
         List<EarningsCalendar> newEarningCals = new();
         foreach (var tickerToProcess in tickersToProcess)
         {
@@ -144,7 +144,7 @@ public class EarningsCalToDb
         IEnumerable<string> tickersInDb = earingsCalInDb.Select(x => x.Ticker);
         IEnumerable<Earningscalendar> earningscalendars = earnCal.Where(x => !tickersInDb.Contains(x.Symbol));
         List<EarningsCalendar> newEarningCals = new();
-        var defaultDate = new DateTime(1900, 1, 1).ToUniversalTime();
+        var defaultDate = new DateTime(2100, 1, 1).ToUniversalTime();
         foreach (var ec in earningscalendars)
         {
             newEarningCals.Add(new EarningsCalendar()

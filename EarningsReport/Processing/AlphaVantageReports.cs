@@ -182,10 +182,26 @@ public class AlphaVantageReports
 
     private async Task<List<EarningsCalendar>> GetFirmsToObtainEarningsReportAsync()
     {
+        DateTime defaultDt = DateTime.Now.AddYears(-2).Date.ToUniversalTime();
+        DateTime changeDefaultDt = new DateTime(2100, 1, 1).ToUniversalTime();
         try
         {
             var ecRecords = (await ecRepository.FindAll(x => x.DataObtained == false))
-                .OrderBy(x => Math.Min(x.VendorEarningsDate.Ticks, x.EarningsDateYahoo.Ticks))
+                .ToList();
+            foreach (var record in ecRecords)
+            {
+                if (record.VendorEarningsDate < defaultDt)
+                {
+                    record.VendorEarningsDate = changeDefaultDt;
+                }
+                if (record.EarningsDateYahoo < defaultDt)
+                {
+                    record.EarningsDateYahoo = changeDefaultDt;
+                }
+            }
+            ecRecords = ecRecords
+                .OrderBy(x => x.VendorEarningsDate)
+                .ThenBy(x => x.EarningsDateYahoo)
                 .Take(MaxNumberOfCalls)
                 .ToList();
             return ecRecords;

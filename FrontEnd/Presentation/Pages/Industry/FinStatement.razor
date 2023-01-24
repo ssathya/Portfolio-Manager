@@ -1,5 +1,111 @@
-﻿<h3>FinStatement</h3>
+﻿<Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+    <Items>
+        <Tab Name="balanceSheet">Balance Sheet</Tab>
+        <Tab Name="cashFlow">Cash Flow</Tab>
+        <Tab Name="incomeStatement">Income Statement</Tab>
+    </Items>
+    <Content>
+        <TabPanel Name="balanceSheet">
+            <Table Hoverable>
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell>Breakdown</TableHeaderCell>
+                        <TableHeaderCell>@BalanceSheetReport.FiscalDateEnding.ToString("MM/dd/yyyy")</TableHeaderCell>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow>
+                        <TableRowCell>Long Term Debt</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.LongTermDebt ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Total Assets</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.TotalAssets ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Current Assets</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.TotalCurrentAssets ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Current Liabilities</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.TotalCurrentLiabilities ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Common Stock Shares Outstanding</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(BalanceSheetReport.CommonStockSharesOutstanding ?? 0)</TableRowCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </TabPanel>
+        <TabPanel Name="cashFlow">
+            <Table Hoverable>
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell>Breakdown</TableHeaderCell>
+                        <TableHeaderCell>@CashFlowReport.FiscalDateEnding.ToString("MM/dd/yyyy")</TableHeaderCell>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow>
+                        <TableRowCell>Operating Cash Flow</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.OperatingCashflow ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Cash Flow from Investment</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.CashflowFromInvestment ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Financing Cash Flow</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.CashflowFromFinancing ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Issuance of Common Stock</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.ProceedsFromIssuanceOfCommonStock ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Profit/Loss</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.ProfitLoss ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Repurchase of Common Stock</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.PaymentsForRepurchaseOfCommonStock ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Capital Expenditure</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(CashFlowReport.CapitalExpenditures ?? 0)</TableRowCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </TabPanel>
+        <TabPanel Name="incomeStatement">
+            <Table Hoverable>
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell>Breakdown</TableHeaderCell>
+                        <TableHeaderCell>@IncomeReport.FiscalDateEnding.ToString("MM/dd/yyyy")</TableHeaderCell>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow>
+                        <TableRowCell>Total Revenue</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(IncomeReport.TotalRevenue ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Gross Profit</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(IncomeReport.GrossProfit ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>Net Income</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(IncomeReport.NetIncome ?? 0)</TableRowCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableRowCell>EBITDA</TableRowCell>
+                        <TableRowCell>@StringHelper.ToKMB(IncomeReport.Ebitda ?? 0)</TableRowCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </TabPanel>
+    </Content>
+</Tabs>
 
-@code {
 
-}

@@ -68,7 +68,10 @@ public class Function
             return;
         }
         var updateResult1 = await earningsCalToDb.UpdateFinnHubData(finnhubCal);
-        var updateResult2 = await earningsCalToDb.UpdateYahooEarningsCal(earningsDates);
+
+        //If we are going to use Yahoo earing calendar then update new two lines.
+        //var updateResult2 = await earningsCalToDb.UpdateYahooEarningsCal(earningsDates);
+        var updateResult2 = true;
         logger.LogInformation($"Processing was {((updateResult1 & updateResult2) ? "Success" : "Failed")}");
         var exceptionReportingResult = await exceptionReporting.BuildReport();
         logger.LogInformation($"Exception reporting {(exceptionReportingResult ? "Success" : "Failed")}");

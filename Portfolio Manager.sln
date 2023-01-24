@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrontEnd", "FrontEnd", "{5D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation", "FrontEnd\Presentation\Presentation.csproj", "{47713E32-C55B-4600-A264-4CDB02F1CBA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PresentationHelper", "FrontEnd\PresentationHelper\PresentationHelper.csproj", "{A7536E01-7BBA-4529-A0EE-19257760F4EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationHelper", "FrontEnd\PresentationHelper\PresentationHelper.csproj", "{A7536E01-7BBA-4529-A0EE-19257760F4EE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

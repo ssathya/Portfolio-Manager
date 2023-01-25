@@ -12,6 +12,8 @@ public class ConsumeFinnhubCalendar
     private readonly IHandleCache handleCache;
     private const string Vendor = "finnhub";
     private const string ISODateFormat = "yyyy-MM-dd";
+    private const int startDateOffset = -20;
+    private const int endDateOffset = -2;
 
     public ConsumeFinnhubCalendar(IConfiguration configuration
         , ILogger<ConsumeFinnhubCalendar> logger
@@ -30,8 +32,8 @@ public class ConsumeFinnhubCalendar
             logger.LogError("Could not find URL to obtain data from Finnhub....");
             return null;
         }
-        var startDate = DateTimeOffset.UtcNow.AddDays(-8).ToString(ISODateFormat);
-        var endDate = DateTimeOffset.UtcNow.AddDays(-1).ToString(ISODateFormat);
+        var startDate = DateTimeOffset.UtcNow.AddDays(startDateOffset).ToString(ISODateFormat);
+        var endDate = DateTimeOffset.UtcNow.AddDays(endDateOffset).ToString(ISODateFormat);
         urlToUse = urlToUse.Replace(@"{startDate}", startDate)
            .Replace(@"{endDate}", endDate);
         FinnhubCal? finnhubCal = await handleCache.GetAsync<FinnhubCal>(urlToUse, CacheDuration.Hours, 23);

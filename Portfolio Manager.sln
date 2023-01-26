@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation", "FrontEnd\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationHelper", "FrontEnd\PresentationHelper\PresentationHelper.csproj", "{A7536E01-7BBA-4529-A0EE-19257760F4EE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManageSimFinRatings", "ManageSimFinRatings\ManageSimFinRatings.csproj", "{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{A7536E01-7BBA-4529-A0EE-19257760F4EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7536E01-7BBA-4529-A0EE-19257760F4EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7536E01-7BBA-4529-A0EE-19257760F4EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,6 +4,7 @@ using ApplicationModels.FinancialStatement;
 using ApplicationModels.FinancialStatement.AlphaVantage;
 using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
+using ApplicationModels.SimFin;
 using ApplicationModels.Views;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,7 @@ public class AppDbContext : DbContext
     public DbSet<CashFlow> CashFlows { get; set; }
     public DbSet<SecurityWithPScore> SecurityWithPScores { get; set; }
     public DbSet<MomMfDolAvg> MomMfDolAvgs { get; set; }
+    public DbSet<SimFinRatio> SimFinRatios { get; set; }
 
     #endregion Public Properties
 
@@ -60,6 +62,7 @@ public class AppDbContext : DbContext
             c.ToView("SecurityWithPScores");
         });
         modelBuilder.Entity<MomMfDolAvg>().HasIndex(p => p.Ticker);
+        modelBuilder.Entity<SimFinRatio>().HasIndex(p => p.Ticker);
     }
 
     #endregion Protected Methods

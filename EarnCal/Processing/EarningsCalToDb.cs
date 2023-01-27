@@ -43,6 +43,7 @@ public class EarningsCalToDb
         {
             (tickersToProcess, indexIndustries, earingsCalInDb)
                 = await GetTickersFromDatabase(finnhubCal);
+            await RemoveProccessedRecords(finnhubCal);
         }
         catch (Exception ex)
         {
@@ -199,6 +200,25 @@ public class EarningsCalToDb
         {
             await ecRepository.Remove(earingsCalToRemove);
         }
+    }
+
+    private async Task RemoveProccessedRecords(FinnhubCal finnhubCal)
+    {
+        var processedEntries = (await ecRepository.FindAll(x => x.DataObtained == true))
+            .ToList();
+        if (finnhubCal.EarningsCalendar == null || finnhubCal.EarningsCalendar.Length == 0)
+        {
+            return;
+        }
+        var removeRecords = finnhubCal.EarningsCalendar.Where(x => processedEntries.Select(x => x.Ticker).ToList().Contains(x.Symbol))
+            .Select(x => x.Symbol);
+        if (removeRecords == null || removeRecords.Count() == 0)
+        {
+            return;
+        }
+        var earningsCalendar = finnhubCal.EarningsCalendar.ToList();
+        earningsCalendar.RemoveAll(x => removeRecords.Contains(x.Symbol));
+        finnhubCal.EarningsCalendar = earningsCalendar.ToArray();
     }
 
     private async Task UpdateExistingRecords(IEnumerable<EarningsCalendar> earingsCalInDb, Earningscalendar[] earningscalendars1)

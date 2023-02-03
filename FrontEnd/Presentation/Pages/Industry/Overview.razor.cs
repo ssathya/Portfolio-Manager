@@ -1,5 +1,6 @@
 ﻿using ApplicationModels.ViewModel;
 using Microsoft.AspNetCore.Components;
+using Presentation.Data;
 using ExtData = ApplicationModels.FinancialStatement.AlphaVantage;
 
 namespace Presentation.Pages.Industry;
@@ -15,7 +16,7 @@ public partial class Overview
     #region Public Properties
 
     [Inject]
-    public HttpClient? Client { get; set; }
+    protected OverviewService? overviewService { get; set; }
 
     [Parameter]
     public string SelectedTicker { get; set; } = string.Empty;
@@ -26,11 +27,6 @@ public partial class Overview
     #endregion Public Properties
 
     #region Protected Methods
-
-    //protected override async Task OnInitializedAsync()
-    //{
-    //    await GetExternalValues();
-    //}
 
     protected override async Task OnParametersSetAsync()
     {
@@ -43,14 +39,14 @@ public partial class Overview
 
     private async Task GetExternalValues()
     {
-        if (Client == null)
+        if (overviewService == null)
         {
             return;
         }
         ExtData.Overview? overview;
         try
         {
-            overview = await Client.GetFromJsonAsync<ExtData.Overview>($"api/Overview/{SelectedTicker}");
+            overview = await overviewService.ExecAsync(SelectedTicker);
         }
         catch (Exception)
         {

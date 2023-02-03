@@ -72,4 +72,6 @@ void SetupDI(IServiceCollection services)
     services.AddSingleton<BalanceSheetService>();
     services.AddSingleton<CashFlowService>();
     services.AddSingleton<IncomeStatementService>();
+    services.AddSingleton<ComputesService>();
+    services.AddSingleton<OverviewService>();
 }

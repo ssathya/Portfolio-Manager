@@ -1,12 +1,23 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using ApplicationModels.FinancialStatement.AlphaVantage;
+using Microsoft.AspNetCore.Components;
+using Presentation.Data;
+
 using ExtData = ApplicationModels.FinancialStatement.AlphaVantage;
 
 namespace Presentation.Pages.Industry;
 
 public partial class FinStatement
 {
+    //[Inject]
+    //public HttpClient? Client { get; set; }
     [Inject]
-    public HttpClient? Client { get; set; }
+    protected BalanceSheetService? balanceSheet { get; set; }
+
+    [Inject]
+    protected CashFlowService? cashFlow { get; set; }
+
+    [Inject]
+    protected IncomeStatementService? incomeStatement { get; set; }
 
     [Inject]
     protected ILogger<FinStatement>? logger { get; set; }
@@ -14,26 +25,26 @@ public partial class FinStatement
     [Parameter]
     public string SelectedTicker { get; set; } = string.Empty;
 
-    protected ExtData.BSReport BalanceSheetReport { get; set; } = new();
-    protected ExtData.CashFlowReport CashFlowReport { get; set; } = new();
-    protected ExtData.IncomeReport IncomeReport { get; set; } = new();
+    protected BSReport BalanceSheetReport { get; set; } = new();
+    protected CashFlowReport CashFlowReport { get; set; } = new();
+    protected IncomeReport IncomeReport { get; set; } = new();
     protected string selectedTab = "balanceSheet";
 
     protected override async Task OnParametersSetAsync()
     {
         selectedTab = "balanceSheet";
-        if (Client == null || logger == null)
+        if (balanceSheet == null || cashFlow == null || incomeStatement == null || logger == null)
         {
             return;
         }
         ExtData.BalanceSheet? companyBS;
-        ExtData.CashFlow? companyCF;
-        ExtData.IncomeStatement? companyIS;
+        CashFlow? companyCF;
+        IncomeStatement? companyIS;
         try
         {
-            companyBS = await Client.GetFromJsonAsync<ExtData.BalanceSheet>($"api/BalanceSheet/{SelectedTicker}");
-            companyCF = await Client.GetFromJsonAsync<ExtData.CashFlow>($"api/CashFlow/{SelectedTicker}");
-            companyIS = await Client.GetFromJsonAsync<ExtData.IncomeStatement>($"api/IncomeStatement/{SelectedTicker}");
+            companyBS = await balanceSheet.ExecAsync(SelectedTicker);
+            companyCF = await cashFlow.ExecAsync(SelectedTicker);
+            companyIS = await incomeStatement.ExecAsync(SelectedTicker);
             BalanceSheetReport = new();
             CashFlowReport = new();
             IncomeReport = new();

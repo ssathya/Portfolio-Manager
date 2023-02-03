@@ -3,6 +3,7 @@ using ApplicationModels.ViewModel;
 using ApplicationModels.Views;
 using BlazorDownloadFile;
 using Microsoft.AspNetCore.Components;
+using Presentation.Data;
 
 namespace Presentation.Pages;
 
@@ -16,29 +17,34 @@ public partial class AllSecurities
     private SecurityDetails selectedIC = new();
 
     [Inject]
-    protected HttpClient? Client { get; set; }
+    protected SecurityWithPScoresService? securityWithPScores { get; set; }
+
+    [Inject]
+    protected MomMfDolAvgsService? momMfDolAvgs { get; set; }
+
+    [Inject]
+    protected ExcelService? excelService { get; set; }
 
     [Inject]
     protected IBlazorDownloadFileService? BlazorDownloadFileService { get; set; }
 
     protected async Task ExcelDownload()
     {
-        if (Client == null || BlazorDownloadFileService == null)
+        if (excelService == null || BlazorDownloadFileService == null)
         {
             return;
         }
         var fileName = $"MyReport{DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.xlsx";
-        var response = await Client.GetAsync("api/Excel");
-        if (response.IsSuccessStatusCode)
+        var response = await excelService.ExecAsync();
+        if (response == null)
         {
-            var fileBytes = await response.Content.ReadAsByteArrayAsync();
-            Console.WriteLine($"Data size if {fileBytes.Length}");
-            DownloadFileResult reslut = await BlazorDownloadFileService.DownloadFile(fileName, fileBytes, "application/octet-stream");
-            Console.WriteLine(reslut.Succeeded ? "Went well" : reslut.ErrorMessage);
+            return;
         }
-        else
+        var fineBytes = response.FileContents.ToArray();
+        DownloadFileResult result = await BlazorDownloadFileService.DownloadFile(fileName, fineBytes, "application/octet-stream");
+        if (!result.Succeeded)
         {
-            Console.WriteLine("Failed getting data from service");
+            Console.WriteLine("Excel download failed");
         }
     }
 
@@ -53,12 +59,12 @@ public partial class AllSecurities
 
     protected override async Task OnInitializedAsync()
     {
-        if (Client == null)
+        if (this.momMfDolAvgs == null || securityWithPScores == null)
         {
             return;
         }
-        List<SecurityWithPScore>? dataInDb = await Client.GetFromJsonAsync<List<SecurityWithPScore>>("api/SecurityWithPScores");
-        List<MomMfDolAvg>? momMfDolAvgs = await Client.GetFromJsonAsync<List<MomMfDolAvg>>("api/MomMfDolAvgs");
+        List<SecurityWithPScore>? dataInDb = await securityWithPScores.ExecAsync();
+        List<MomMfDolAvg>? momMfDolAvgs = await this.momMfDolAvgs.ExecAsync();
         momMfDolAvgs ??= new();
 
         if (dataInDb == null)

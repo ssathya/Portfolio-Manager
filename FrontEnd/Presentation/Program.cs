@@ -66,12 +66,13 @@ app.Run();
 void SetupDI(IServiceCollection services)
 {
     services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
-    services.AddSingleton<SecurityWithPScoresService>();
-    services.AddSingleton<MomMfDolAvgsService>();
-    services.AddSingleton<ExcelService>();
     services.AddSingleton<BalanceSheetService>();
     services.AddSingleton<CashFlowService>();
-    services.AddSingleton<IncomeStatementService>();
     services.AddSingleton<ComputesService>();
+    services.AddSingleton<ExcelService>();
+    services.AddSingleton<IncomeStatementService>();
+    services.AddSingleton<MomMfDolAvgsService>();
     services.AddSingleton<OverviewService>();
+    services.AddSingleton<PriceService>();
+    services.AddSingleton<SecurityWithPScoresService>();
 }

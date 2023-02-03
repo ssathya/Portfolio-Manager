@@ -1,6 +1,7 @@
 ﻿using ApplicationModels.Quotes;
 using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
+using Presentation.Data;
 using System.Linq;
 
 namespace Presentation.Pages.Industry;
@@ -8,7 +9,7 @@ namespace Presentation.Pages.Industry;
 public partial class PriceChart
 {
     [Inject]
-    public HttpClient? Client { get; set; }
+    protected PriceService? priceService { get; set; }
 
     [Inject]
     protected ILogger<PriceChart>? logger { get; set; }
@@ -26,13 +27,13 @@ public partial class PriceChart
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Client == null)
+        if (priceService == null)
         {
             return;
         }
         try
         {
-            yPrice = (await Client.GetFromJsonAsync<YPrice>($"api/Price/{SelectedTicker}")) ?? new();
+            yPrice = (await priceService.ExecAsync(SelectedTicker)) ?? new();
         }
         catch (Exception ex)
         {

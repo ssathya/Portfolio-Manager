@@ -33,7 +33,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation", "FrontEnd\Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationHelper", "FrontEnd\PresentationHelper\PresentationHelper.csproj", "{A7536E01-7BBA-4529-A0EE-19257760F4EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManageSimFinRatings", "ManageSimFinRatings\ManageSimFinRatings.csproj", "{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManageSimFinRatings", "ManageSimFinRatings\ManageSimFinRatings.csproj", "{127A7C4F-39C0-4D12-8DE3-73465E4B1D71}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3F9D2FF2-33C0-4AF5-B302-306B6A523DA9}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

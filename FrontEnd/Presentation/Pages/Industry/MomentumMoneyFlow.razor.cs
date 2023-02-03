@@ -1,13 +1,14 @@
 ﻿using ApplicationModels.Compute;
 using Blazorise.Charts;
 using Microsoft.AspNetCore.Components;
+using Presentation.Data;
 
 namespace Presentation.Pages.Industry;
 
 public partial class MomentumMoneyFlow
 {
     [Inject]
-    public HttpClient? Client { get; set; }
+    public ComputesService? computesService { get; set; }
 
     [Inject]
     protected ILogger<MomentumMoneyFlow>? logger { get; set; }
@@ -27,13 +28,13 @@ public partial class MomentumMoneyFlow
     protected override async Task OnParametersSetAsync()
     {
         Compute compute = new();
-        if (Client == null || string.IsNullOrEmpty(SelectedTicker))
+        if (computesService == null || string.IsNullOrEmpty(SelectedTicker))
         {
             return;
         }
         try
         {
-            compute = (await Client.GetFromJsonAsync<Compute>($"api/Computes/{SelectedTicker}")) ?? new();
+            compute = (await computesService.ExecAsync(SelectedTicker)) ?? new();
         }
         catch (Exception ex)
         {

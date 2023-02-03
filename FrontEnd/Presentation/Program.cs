@@ -8,6 +8,7 @@ using OfficeOpenXml;
 using Presentation.Data;
 using PsqlAccess;
 using PsqlAccess.SecListMaintain;
+using System.Globalization;
 
 const string ApplicationName = "Presentation";
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +28,7 @@ ServiceHandler.SetupLogger(builder.Services, Configuration, ApplicationName);
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(Configuration["ApiURL"] ?? "https://localhost:7158/") });
 SetupDI(builder.Services);
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
 builder.Services
     .AddBlazorise(options =>
     {
@@ -63,7 +64,7 @@ app.MapFallbackToPage("/_Host");
 
 app.Run();
 
-void SetupDI(IServiceCollection services)
+static void SetupDI(IServiceCollection services)
 {
     services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
     services.AddSingleton<BalanceSheetService>();

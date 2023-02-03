@@ -13,7 +13,7 @@ public static class CacheInitialize
         var cachePath = Environment.GetEnvironmentVariable("HOME");
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            cachePath += "/cache";
+            cachePath += $"/cache/{appId}";
             DirectoryInfo di;
             if (!Directory.Exists(cachePath))
             {

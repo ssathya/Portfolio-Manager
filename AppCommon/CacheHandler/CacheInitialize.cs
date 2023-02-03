@@ -9,21 +9,30 @@ public static class CacheInitialize
 
     public static void Initialize(string appId)
     {
-        var cachePath = """~/barrel/""";
+        Barrel.ApplicationId = appId;
+        var cachePath = Environment.GetEnvironmentVariable("HOME");
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
+            cachePath += "/cache";
+            DirectoryInfo di;
             if (!Directory.Exists(cachePath))
             {
-                Directory.CreateDirectory(cachePath);
+                di = Directory.CreateDirectory(cachePath);
             }
-            Barrel.Create(cachePath);
+            else
+            {
+                di = new DirectoryInfo(cachePath);
+            }
+            if (di.Exists)
+            {
+                Barrel.Create(cachePath);
+            }
         }
         else
         {
             cachePath = Path.GetTempPath();
             Barrel.Create(cachePath);
         }
-        Barrel.ApplicationId = appId;
     }
 
     #endregion Public Methods

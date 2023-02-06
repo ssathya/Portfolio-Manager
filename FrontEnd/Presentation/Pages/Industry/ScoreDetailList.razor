@@ -1,0 +1,93 @@
+﻿<h3>Score Detail</h3>
+<Table Striped>
+    <TableBody>
+        <TableRow>
+            <TableRowCell>
+                <Tooltip Text="Positive return on assets (ROA) in the current year">
+                    Return On Assets
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.ReturnOnAssets />
+            </TableRowCell>
+            <TableRowCell>
+                <Tooltip Text="Positive cash flow for current year">
+                    Operating Cash Flow
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.OperatingCashFlow />
+            </TableRowCell>
+        </TableRow>
+
+        <TableRow>
+            <TableRowCell>
+                <Tooltip Text="ROA is higher in the current year compared to the previous one">
+                    Improved ROA
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.IsROABetter />
+            </TableRowCell>
+            <TableRowCell>
+                <Tooltip Text="Cash Flow/Total Assets is higher than ROA in the current year">
+                    Accruals
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.Accruals />
+            </TableRowCell>
+        </TableRow>
+
+        <TableRow>
+            <TableRowCell>
+                <Tooltip Text="Lower amount of long term debt in the current period, compared to the previous year ">
+                    Change in Leverage
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.ChangeInLeverage />
+            </TableRowCell>
+            <TableRowCell>
+                <Tooltip Text="Higher current ratio this year compared to the previous year (more liquidity)">
+                    Change In Current Ratio
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.ChangeInCurrentRatio />
+            </TableRowCell>
+        </TableRow>
+
+        <TableRow>
+            <TableRowCell>
+                <Tooltip Text="no new shares were issued during the last year">
+                    Reduced Shares Outstanding
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.ChangeInNumberOfShares />
+            </TableRowCell>
+            <TableRowCell>
+                <Tooltip Text="is higher in the current year compared to the previous one">
+                    Increase in Gross Margin
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.IncreaseGrossMargin />
+            </TableRowCell>
+        </TableRow>
+
+        <TableRow>
+            <TableRowCell>
+                <Tooltip Text="A higher asset turnover ratio compared to the previous year">
+                    Asset Turnover ratio
+                </Tooltip>
+            </TableRowCell>
+            <TableRowCell>
+                <DrawBadgeIcon BooleanValue=@ScoreDetail.AssetTurnoverRatio />
+            </TableRowCell>
+            <TableRowCell />
+            <TableRowCell />
+        </TableRow>
+    </TableBody>
+</Table>

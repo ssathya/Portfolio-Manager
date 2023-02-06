@@ -76,4 +76,5 @@ static void SetupDI(IServiceCollection services)
     services.AddSingleton<OverviewService>();
     services.AddSingleton<PriceService>();
     services.AddSingleton<SecurityWithPScoresService>();
+    services.AddScoped<ScoreDetailService>();
 }

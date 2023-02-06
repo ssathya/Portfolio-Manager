@@ -12,8 +12,8 @@ public class ConsumeFinnhubCalendar
     private readonly IHandleCache handleCache;
     private const string Vendor = "finnhub";
     private const string ISODateFormat = "yyyy-MM-dd";
-    private const int startDateOffset = -20;
-    private const int endDateOffset = -2;
+    private const int startDateOffset = -40;
+    private const int endDateOffset = -5;
 
     public ConsumeFinnhubCalendar(IConfiguration configuration
         , ILogger<ConsumeFinnhubCalendar> logger

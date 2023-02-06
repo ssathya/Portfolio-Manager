@@ -6,7 +6,7 @@
     </Column>
     <Column ColumnSize="ColumnSize.Is3.Is6.WithOffset">
         <Button Color="Color.Primary" Clicked="@ExcelDownload">
-            Download <Icon Name="@("fa-solid fa-file-excel")"/>
+            Download <Icon Name="@("fa-solid fa-file-excel")" />
         </Button>
     </Column>
 </Row>
@@ -82,7 +82,7 @@
                 <Overview SelectedTicker="@selectedIC.Ticker" securityDetails="@selectedIC" />
             </Alert>
         </Column>
-        
+
         <Column ColumnSize="ColumnSize.Is6">
             <Alert Color="Color.Primary" Visible>
                 <FinStatement SelectedTicker="@selectedIC.Ticker" />
@@ -98,6 +98,13 @@
         <Column ColumnSize="ColumnSize.Is6">
             <Alert Color="Color.Primary" Visible>
                 <MomentumMoneyFlow SelectedTicker="@selectedIC.Ticker" />
+            </Alert>
+        </Column>
+    </Row>
+    <Row HorizontalGutter="32" VerticalGutter="16">
+        <Column ColumnSize="ColumnSize.Is12">
+            <Alert Color="Color.Primary" Visible>
+                <ScoreDetailList SelectedTicker="@selectedIC.Ticker" />
             </Alert>
         </Column>
     </Row>

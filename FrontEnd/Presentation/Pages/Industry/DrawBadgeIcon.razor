@@ -1,0 +1,16 @@
+﻿@if(BooleanValue)
+{
+    <Badge Color="Color.Success">
+        <Icon Name="IconName.Check" />
+    </Badge>
+}
+else
+{
+    <Badge Color="Color.Danger">
+        <Icon Name="IconName.Times" />
+    </Badge>
+}
+@code {
+    [Parameter]
+    public bool BooleanValue{ get; set; }
+}

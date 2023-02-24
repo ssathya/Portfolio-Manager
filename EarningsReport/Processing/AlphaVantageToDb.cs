@@ -214,7 +214,14 @@ public class AlphaVantageToDb
                 record.RemoveDate = simulation ? oneWeekAfter : oneMonthAfter;
                 record.EarningsReadDate = today;
             }
-            await ecRepository.Update(recordsToUpdate);
+            if (simulation == true)
+            {
+                await ecRepository.Add(recordsToUpdate);
+            }
+            else
+            {
+                await ecRepository.Update(recordsToUpdate);
+            }
         }
         catch (Exception ex)
         {

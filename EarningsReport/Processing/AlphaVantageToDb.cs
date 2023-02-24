@@ -184,6 +184,7 @@ public class AlphaVantageToDb
         //1. Remove aged records
         DateTime oneMonthAgo = DateTime.UtcNow.Date.AddMonths(-1);
         DateTime oneMonthAfter = DateTime.UtcNow.Date.AddMonths(1);
+        DateTime oneWeekAfter = DateTime.UtcNow.Date.AddDays(7);
         DateTime today = DateTime.UtcNow.Date;
         try
         {
@@ -192,16 +193,25 @@ public class AlphaVantageToDb
             {
                 await ecRepository.Remove(recordsToRemove);
             }
-            var recordsToUpdate = await ecRepository.FindAll(x => x.Ticker.Equals(ticker));
-            if (!recordsToUpdate.Any())
+            List<EarningsCalendar> recordsToUpdate = (await ecRepository.FindAll(x => x.Ticker.Equals(ticker)))
+                .ToList();
+            bool simulation = false;
+            if (!recordsToUpdate.Any()) //patch earnings report
             {
-                logger.LogError("Could not find ticker in Earnings calendar");
-                return false;
+                logger.LogInformation($"Could not find ticker {ticker} in Earnings calendar");
+                recordsToUpdate.Add(new EarningsCalendar
+                {
+                    DataObtained = false,
+                    Ticker = ticker,
+                    EarningsDateYahoo = new DateTime(2100, 1, 1).ToUniversalTime(),
+                    VendorEarningsDate = DateTime.Now.Date.ToUniversalTime()
+                });
+                simulation = true;
             }
             foreach (var record in recordsToUpdate)
             {
                 record.DataObtained = true;
-                record.RemoveDate = oneMonthAfter;
+                record.RemoveDate = simulation ? oneWeekAfter : oneMonthAfter;
                 record.EarningsReadDate = today;
             }
             await ecRepository.Update(recordsToUpdate);

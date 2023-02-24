@@ -1,6 +1,9 @@
 ﻿using AppCommon.CacheHandler;
 using ApplicationModels.EarningsCal;
 using ApplicationModels.FinancialStatement.AlphaVantage;
+using ApplicationModels.Indexes;
+using ApplicationModels.ViewModel;
+using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
@@ -9,12 +12,12 @@ namespace EarningsReport.Processing;
 
 public class AlphaVantageReports
 {
-    #region Private Fields
-
     private const int MaxNumberOfCalls = 1;
     private const string Vendor = "Alphavantage";
     private readonly IConfiguration configuration;
     private readonly IRepository<EarningsCalendar> ecRepository;
+    private readonly IRepository<Overview> overviewRepository;
+    private readonly IRepository<IndexComponent> indexComponentRepository;
 
     private readonly Dictionary<FilingNames, string> filings = new()
     {
@@ -27,31 +30,28 @@ public class AlphaVantageReports
     private readonly IHandleCache handleCache;
     private readonly ILogger<AlphaVantageReports> logger;
 
-    #endregion Private Fields
-
-    #region Public Constructors
-
     public AlphaVantageReports(IRepository<EarningsCalendar> ecRepository
+        , IRepository<Overview> overviewRepository
+        , IRepository<IndexComponent> indexComponentRepository
         , ILogger<AlphaVantageReports> logger
         , IHandleCache handleCache
         , IConfiguration configuration)
     {
         this.ecRepository = ecRepository;
+        this.overviewRepository = overviewRepository;
+        this.indexComponentRepository = indexComponentRepository;
         this.logger = logger;
         this.handleCache = handleCache;
         this.configuration = configuration;
     }
-
-    #endregion Public Constructors
-
-    #region Public Methods
 
     public async Task<(Overview, BalanceSheet, IncomeStatement, CashFlow)> ExecAsync()
     {
         List<EarningsCalendar> earningsCalendars = await GetFirmsToObtainEarningsReportAsync();
         if (earningsCalendars == null || earningsCalendars.Count == 0)
         {
-            return (new Overview(), new BalanceSheet(), new IncomeStatement(), new CashFlow());
+            earningsCalendars ??= new();
+            await PopulateEarningsCalendarWithMissedValues(earningsCalendars);
         }
         var earningsCalendar = earningsCalendars.First();
         Overview? overview = await FetchDataFromAlpahVantageAsync<Overview?>(earningsCalendar.Ticker, FilingNames.Overview);
@@ -81,9 +81,41 @@ public class AlphaVantageReports
         return (overview, balanceSheet, incomeStatement, cashFlow);
     }
 
-    #endregion Public Methods
-
-    #region Private Methods
+    private async Task PopulateEarningsCalendarWithMissedValues(List<EarningsCalendar> earningsCalendars)
+    {
+        var rnd = new Random((int)DateTime.Now.Ticks % 500);
+        List<string> indexTickers = (await indexComponentRepository.FindAll())
+            .Select(x => x.Ticker).ToList();
+        if (indexTickers.Count == 0)
+        { return; }
+        List<string> processedTickers = (await overviewRepository.FindAll())
+            .Select(x => x.Ticker).ToList();
+        var remainingTickers = indexTickers.Except(processedTickers)
+            .ToList();
+        if (remainingTickers.Any())
+        {
+            earningsCalendars.Add(new EarningsCalendar
+            {
+                DataObtained = false,
+                EarningsDateYahoo = new DateTime(2100, 1, 1).ToUniversalTime(),
+                VendorEarningsDate = DateTime.Now.Date.ToUniversalTime(),
+                EarningsReadDate = DateTime.Now.Date.ToUniversalTime(),
+                Ticker = remainingTickers.OrderBy(x => rnd.Next())
+                .First() ?? string.Empty
+            });
+            return;
+        }
+        earningsCalendars.Add(new EarningsCalendar
+        {
+            DataObtained = false,
+            EarningsDateYahoo = new DateTime(2100, 1, 1).ToUniversalTime(),
+            VendorEarningsDate = DateTime.Now.Date.ToUniversalTime(),
+            EarningsReadDate = DateTime.Now.Date.ToUniversalTime(),
+            Ticker = indexTickers.OrderBy(x => rnd.Next())
+                .First() ?? string.Empty
+        });
+        return;
+    }
 
     private async Task<T?> FetchDataFromAlpahVantageAsync<T>(string symbol, FilingNames filingNames)
     {
@@ -213,6 +245,4 @@ public class AlphaVantageReports
             return new List<EarningsCalendar>();
         }
     }
-
-    #endregion Private Methods
 }

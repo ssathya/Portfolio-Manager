@@ -6,8 +6,7 @@ name: .NET
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  
 
 jobs:
   build:
@@ -28,5 +27,7 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet publish -c Release
+    - name: Restart server
+      run: sudo systemctl restart Presentation.service
     - name: Complete
       run: echo "All done!"

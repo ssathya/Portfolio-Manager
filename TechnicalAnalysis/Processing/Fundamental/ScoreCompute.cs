@@ -60,7 +60,7 @@ public class ScoreCompute
             PopulateBSValues(balanceSheet, df);
             //Check if there is insufficient values; if yes computed values has a zero for this ticker.
             if (computedValues.ContainsKey(balanceSheet.Ticker)) continue;
-            var cashFlow = cashFlows.FirstOrDefault(x => x.Ticker == balanceSheet.Ticker);
+            CashFlow? cashFlow = cashFlows.FirstOrDefault(x => x.Ticker == balanceSheet.Ticker);
             if (cashFlow != default)
             {
                 PopulateCFValues(cashFlow, df);
@@ -101,72 +101,6 @@ public class ScoreCompute
         df.PyGrossProfit = df.PyGrossProfit == 0 ? oneCent : df.PyGrossProfit;
         df.CyNetIncome = df.CyNetIncome == 0 ? oneCent : df.CyNetIncome;
         df.PyNetIncome = df.PyNetIncome == 0 ? oneCent : df.PyNetIncome;
-    }
-
-    private static void PopulateCFValues(CashFlow cashFlow, DerivedFinancials df)
-    {
-        if (cashFlow.AnnualReports.Count >= 3)
-        {
-            var cfs = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
-            df.OperatingCashFlow = cfs[0].OperatingCashflow ?? 0;
-            return;
-        }
-        else if (cashFlow.QuarterlyReports.Count >= 9)
-        {
-            var cfs = cashFlow.QuarterlyReports.OrderBy(r => r.FiscalDateEnding).ToList();
-            df.OperatingCashFlow = (cfs[0].OperatingCashflow ?? 0)
-            + (cfs[1].OperatingCashflow ?? 0)
-            + (cfs[2].OperatingCashflow ?? 0)
-            + (cfs[3].OperatingCashflow ?? 0);
-        }
-    }
-
-    private static void PopulateISValues(IncomeStatement incomeStatement, DerivedFinancials df)
-    {
-        if (incomeStatement.AnnualReports.Count >= 3)
-        {
-            var incStm = incomeStatement.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
-            df.CyRevenue = incStm[0].TotalRevenue ?? 0;
-            df.PyRevenue = incStm[1].TotalRevenue ?? 0;
-            df.CyGrossProfit = incStm[0].GrossProfit ?? 0;
-            df.PyGrossProfit = incStm[1].GrossProfit ?? 0;
-            df.CyNetIncome = incStm[0].NetIncome ?? 0;
-            df.PyNetIncome = incStm[1].NetIncome ?? 0;
-            return;
-        }
-        else if (incomeStatement.QuarterlyReports.Count >= 9)
-        {
-            var incStm = incomeStatement.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding)
-            .ToList();
-            df.CyRevenue =
-                (incStm[0].TotalRevenue ?? 0)
-                + (incStm[1].TotalRevenue ?? 0)
-                + (incStm[2].TotalRevenue ?? 0)
-                + (incStm[3].TotalRevenue ?? 0);
-            df.PyRevenue =
-                (incStm[OneYearOffSet + 0].TotalRevenue ?? 0)
-                + (incStm[OneYearOffSet + 1].TotalRevenue ?? 0)
-                + (incStm[OneYearOffSet + 2].TotalRevenue ?? 0)
-                + (incStm[OneYearOffSet + 3].TotalRevenue ?? 0);
-            df.CyGrossProfit = (incStm[0].GrossProfit ?? 0)
-                + (incStm[1].GrossProfit ?? 0)
-                + (incStm[2].GrossProfit ?? 0)
-                + (incStm[3].GrossProfit ?? 0);
-            df.PyGrossProfit =
-                (incStm[OneYearOffSet + 0].GrossProfit ?? 0)
-                + (incStm[OneYearOffSet + 1].GrossProfit ?? 0)
-                + (incStm[OneYearOffSet + 2].GrossProfit ?? 0)
-                + (incStm[OneYearOffSet + 3].GrossProfit ?? 0);
-            df.CyNetIncome = (incStm[0].NetIncome ?? 0)
-                + (incStm[1].NetIncome ?? 0)
-                + (incStm[2].NetIncome ?? 0)
-                + (incStm[3].NetIncome ?? 0);
-            df.PyNetIncome =
-                (incStm[OneYearOffSet + 0].NetIncome ?? 0)
-                + (incStm[OneYearOffSet + 1].NetIncome ?? 0)
-                + (incStm[OneYearOffSet + 2].NetIncome ?? 0)
-                + (incStm[OneYearOffSet + 3].NetIncome ?? 0);
-        }
     }
 
     private ScoreDetail ComputePScore(DerivedFinancials df, BalanceSheet balanceSheet)
@@ -262,6 +196,89 @@ public class ScoreCompute
         }
     }
 
+    private void PopulateCFValues(CashFlow cashFlow, DerivedFinancials df)
+    {
+        List<CashFlowReport> cfAnnualReports = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        List<CashFlowReport> cfQuarterlyReports = cashFlow.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        if (cfAnnualReports.First().FiscalDateEnding < cfQuarterlyReports.First().FiscalDateEnding)
+        {
+            //compute TTM values
+            string ticker = cashFlow.Ticker;
+            UpdateAnnualCashFlowReportsWithTTMValues(cfAnnualReports, cfQuarterlyReports, ticker);
+        }
+
+        if (cashFlow.AnnualReports.Count >= 3)
+        {
+            var cfs = cashFlow.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = cfs[0].OperatingCashflow ?? 0;
+            return;
+        }
+        else if (cashFlow.QuarterlyReports.Count >= 9)
+        {
+            var cfs = cashFlow.QuarterlyReports.OrderBy(r => r.FiscalDateEnding).ToList();
+            df.OperatingCashFlow = (cfs[0].OperatingCashflow ?? 0)
+            + (cfs[1].OperatingCashflow ?? 0)
+            + (cfs[2].OperatingCashflow ?? 0)
+            + (cfs[3].OperatingCashflow ?? 0);
+        }
+    }
+
+    private void PopulateISValues(IncomeStatement incomeStatement, DerivedFinancials df)
+    {
+        List<IncomeReport> isAnnualReports = incomeStatement.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        List<IncomeReport> isQuarterlyReports = incomeStatement.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        if (isAnnualReports.First().FiscalDateEnding < isQuarterlyReports.First().FiscalDateEnding)
+        {
+            //compute TTM values
+            string ticker = incomeStatement.Ticker;
+            UpdateAnnualIncomeStatementReportsWithTTMValues(isAnnualReports, isQuarterlyReports, ticker);
+        }
+        if (incomeStatement.AnnualReports.Count >= 3)
+        {
+            var incStm = incomeStatement.AnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+            df.CyRevenue = incStm[0].TotalRevenue ?? 0;
+            df.PyRevenue = incStm[1].TotalRevenue ?? 0;
+            df.CyGrossProfit = incStm[0].GrossProfit ?? 0;
+            df.PyGrossProfit = incStm[1].GrossProfit ?? 0;
+            df.CyNetIncome = incStm[0].NetIncome ?? 0;
+            df.PyNetIncome = incStm[1].NetIncome ?? 0;
+            return;
+        }
+        else if (incomeStatement.QuarterlyReports.Count >= 9)
+        {
+            var incStm = incomeStatement.QuarterlyReports.OrderByDescending(r => r.FiscalDateEnding)
+            .ToList();
+            df.CyRevenue =
+                (incStm[0].TotalRevenue ?? 0)
+                + (incStm[1].TotalRevenue ?? 0)
+                + (incStm[2].TotalRevenue ?? 0)
+                + (incStm[3].TotalRevenue ?? 0);
+            df.PyRevenue =
+                (incStm[OneYearOffSet + 0].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 1].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 2].TotalRevenue ?? 0)
+                + (incStm[OneYearOffSet + 3].TotalRevenue ?? 0);
+            df.CyGrossProfit = (incStm[0].GrossProfit ?? 0)
+                + (incStm[1].GrossProfit ?? 0)
+                + (incStm[2].GrossProfit ?? 0)
+                + (incStm[3].GrossProfit ?? 0);
+            df.PyGrossProfit =
+                (incStm[OneYearOffSet + 0].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 1].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 2].GrossProfit ?? 0)
+                + (incStm[OneYearOffSet + 3].GrossProfit ?? 0);
+            df.CyNetIncome = (incStm[0].NetIncome ?? 0)
+                + (incStm[1].NetIncome ?? 0)
+                + (incStm[2].NetIncome ?? 0)
+                + (incStm[3].NetIncome ?? 0);
+            df.PyNetIncome =
+                (incStm[OneYearOffSet + 0].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 1].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 2].NetIncome ?? 0)
+                + (incStm[OneYearOffSet + 3].NetIncome ?? 0);
+        }
+    }
+
     private async Task<List<BalanceSheet>> ReadAllBalanceSheetsAsync()
     {
         try
@@ -325,6 +342,68 @@ public class ScoreCompute
             logger.LogError("Unable to update table ScoreDetail in ScoreCompute:SaveValuesToDb");
             logger.LogError(ex.ToString());
             return false;
+        }
+    }
+
+    private void UpdateAnnualCashFlowReportsWithTTMValues(List<CashFlowReport> cfAnnualReports, List<CashFlowReport> cfQuarterlyReports, string ticker)
+    {
+        cfAnnualReports = cfAnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        cfQuarterlyReports = cfQuarterlyReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        DateTime lastAnnualReportDt = cfAnnualReports.First().FiscalDateEnding;
+        var cfQuarterlyRemove = cfQuarterlyReports.Where(r => r.FiscalDateEnding < lastAnnualReportDt.AddYears(-1)).ToList();
+        int quarterReportAdjustments = cfQuarterlyReports.Where(r => r.FiscalDateEnding > lastAnnualReportDt).Count();
+        int countRemember = quarterReportAdjustments;
+        if (cfQuarterlyRemove.Count < quarterReportAdjustments)
+        {
+            logger.LogInformation($"Insufficient Quarter yearly reports for {ticker}");
+            return;
+        }
+        CashFlowReport lastCashFlowReport = cfAnnualReports.First();
+
+        while (quarterReportAdjustments > 0)
+        {
+            lastCashFlowReport.OperatingCashflow += cfQuarterlyReports[quarterReportAdjustments - 1].OperatingCashflow;
+            //Add additional attributes if needed
+            quarterReportAdjustments--;
+        }
+
+        while (countRemember > 0)
+        {
+            lastCashFlowReport.OperatingCashflow -= cfQuarterlyRemove[countRemember - 1].OperatingCashflow;
+            //Add additional attributes if needed
+            countRemember--;
+        }
+    }
+
+    private void UpdateAnnualIncomeStatementReportsWithTTMValues(List<IncomeReport> isAnnualReports, List<IncomeReport> isQuarterlyReports, string ticker)
+    {
+        isAnnualReports = isAnnualReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        isQuarterlyReports = isQuarterlyReports.OrderByDescending(r => r.FiscalDateEnding).ToList();
+        DateTime lasAnnualReportDt = isAnnualReports.First().FiscalDateEnding;
+        List<IncomeReport> isQuarterlyRemove = isQuarterlyReports.Where(r => r.FiscalDateEnding < lasAnnualReportDt).ToList();
+        int quarterReportAdjustments = isQuarterlyReports.Where(r => r.FiscalDateEnding > lasAnnualReportDt).Count();
+        int countRemember = quarterReportAdjustments;
+        if (isQuarterlyRemove.Count < quarterReportAdjustments)
+        {
+            logger.LogInformation($"Insufficient Quarter yearly reports for {ticker}");
+            return;
+        }
+        IncomeReport lastIncomeReport = isAnnualReports.First();
+        while (quarterReportAdjustments > 0)
+        {
+            lastIncomeReport.TotalRevenue += isQuarterlyReports[quarterReportAdjustments - 1].TotalRevenue;
+            lastIncomeReport.GrossProfit += isQuarterlyReports[quarterReportAdjustments - 1].GrossProfit;
+            lastIncomeReport.NetIncome += isQuarterlyReports[quarterReportAdjustments - 1].NetIncome;
+            //Add additional attributes if needed
+            quarterReportAdjustments--;
+        }
+        while (countRemember > 0)
+        {
+            lastIncomeReport.TotalRevenue -= isQuarterlyRemove[countRemember - 1].TotalRevenue;
+            lastIncomeReport.GrossProfit -= isQuarterlyRemove[countRemember - 1].GrossProfit;
+            lastIncomeReport.NetIncome -= isQuarterlyRemove[countRemember - 1].NetIncome;
+            //Add additional attributes if needed
+            countRemember--;
         }
     }
 

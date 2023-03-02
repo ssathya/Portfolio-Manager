@@ -16,7 +16,7 @@ public class AlphaVantageReports
     private const string Vendor = "Alphavantage";
     private readonly IConfiguration configuration;
     private readonly IRepository<EarningsCalendar> ecRepository;
-    private readonly IRepository<Overview> overviewRepository;
+    private readonly IRepository<BalanceSheet> balanceSheetRepository;
     private readonly IRepository<IndexComponent> indexComponentRepository;
 
     private readonly Dictionary<FilingNames, string> filings = new()
@@ -31,14 +31,14 @@ public class AlphaVantageReports
     private readonly ILogger<AlphaVantageReports> logger;
 
     public AlphaVantageReports(IRepository<EarningsCalendar> ecRepository
-        , IRepository<Overview> overviewRepository
+        , IRepository<BalanceSheet> balanceSheetRepository
         , IRepository<IndexComponent> indexComponentRepository
         , ILogger<AlphaVantageReports> logger
         , IHandleCache handleCache
         , IConfiguration configuration)
     {
         this.ecRepository = ecRepository;
-        this.overviewRepository = overviewRepository;
+        this.balanceSheetRepository = balanceSheetRepository;
         this.indexComponentRepository = indexComponentRepository;
         this.logger = logger;
         this.handleCache = handleCache;
@@ -54,25 +54,25 @@ public class AlphaVantageReports
             await PopulateEarningsCalendarWithMissedValues(earningsCalendars);
         }
         var earningsCalendar = earningsCalendars.First();
-        Overview? overview = await FetchDataFromAlpahVantageAsync<Overview?>(earningsCalendar.Ticker, FilingNames.Overview);
+        Overview? overview = await FetchDataFromAlpahaVantageAsync<Overview?>(earningsCalendar.Ticker, FilingNames.Overview);
         if (overview == null || string.IsNullOrEmpty(overview.Ticker))
         {
             return (new Overview(), new BalanceSheet(), new IncomeStatement(), new CashFlow());
         }
         FixDatesInOverview(overview, earningsCalendar);
-        BalanceSheet? balanceSheet = await FetchDataFromAlpahVantageAsync<BalanceSheet?>(earningsCalendar.Ticker, FilingNames.BalanceSheet);
+        BalanceSheet? balanceSheet = await FetchDataFromAlpahaVantageAsync<BalanceSheet?>(earningsCalendar.Ticker, FilingNames.BalanceSheet);
         if (balanceSheet == null || string.IsNullOrEmpty(balanceSheet.Ticker))
         {
             return (new Overview(), new BalanceSheet(), new IncomeStatement(), new CashFlow());
         }
         FixBalanceSheetDates(balanceSheet);
-        IncomeStatement? incomeStatement = await FetchDataFromAlpahVantageAsync<IncomeStatement?>(earningsCalendar.Ticker, FilingNames.Income);
+        IncomeStatement? incomeStatement = await FetchDataFromAlpahaVantageAsync<IncomeStatement?>(earningsCalendar.Ticker, FilingNames.Income);
         if (incomeStatement == null || string.IsNullOrEmpty(incomeStatement.Ticker))
         {
             return (new Overview(), new BalanceSheet(), new IncomeStatement(), new CashFlow());
         }
         FixIncomeStatementDates(incomeStatement);
-        CashFlow? cashFlow = await FetchDataFromAlpahVantageAsync<CashFlow?>(earningsCalendar.Ticker, FilingNames.Cashflow);
+        CashFlow? cashFlow = await FetchDataFromAlpahaVantageAsync<CashFlow?>(earningsCalendar.Ticker, FilingNames.Cashflow);
         if (cashFlow == null || string.IsNullOrEmpty(cashFlow.Ticker))
         {
             return (new Overview(), new BalanceSheet(), new IncomeStatement(), new CashFlow());
@@ -88,7 +88,12 @@ public class AlphaVantageReports
             .Select(x => x.Ticker).ToList();
         if (indexTickers.Count == 0)
         { return; }
-        List<string> processedTickers = (await overviewRepository.FindAll())
+        List<BalanceSheet> balanceSheets = (await balanceSheetRepository.FindAll()).ToList();
+        List<string> earningsCalendarsReadTickers = (await ecRepository.FindAll(x => x.DataObtained == true))
+            .Select(x => x.Ticker)
+            .ToList();
+
+        List<string> processedTickers = balanceSheets
             .Select(x => x.Ticker).ToList();
         var remainingTickers = indexTickers.Except(processedTickers)
             .ToList();
@@ -105,19 +110,39 @@ public class AlphaVantageReports
             });
             return;
         }
-        earningsCalendars.Add(new EarningsCalendar
+
+        string ticker = string.Empty;
+        DateTime lastReportedDate = new DateTime(2100, 1, 1);
+        foreach (var balanceSheet in balanceSheets)
         {
-            DataObtained = false,
-            EarningsDateYahoo = new DateTime(2100, 1, 1).ToUniversalTime(),
-            VendorEarningsDate = DateTime.Now.Date.ToUniversalTime(),
-            EarningsReadDate = DateTime.Now.Date.ToUniversalTime(),
-            Ticker = indexTickers.OrderBy(x => rnd.Next())
-                .First() ?? string.Empty
-        });
+            List<DateTime> dateTimes = new()
+            {
+                balanceSheet.AnnualReports.Max(x => x.FiscalDateEnding),
+                balanceSheet.QuarterlyReports.Max(x => x.FiscalDateEnding)
+            };
+            if (lastReportedDate > dateTimes.Max()
+                && !earningsCalendarsReadTickers.Contains(balanceSheet.Ticker))
+            {
+                lastReportedDate = dateTimes.Max();
+                ticker = balanceSheet.Ticker;
+            }
+        }
+        if (!string.IsNullOrEmpty(ticker))
+        {
+            earningsCalendars.Add(new EarningsCalendar
+            {
+                DataObtained = false,
+                EarningsDateYahoo = new DateTime(2100, 1, 1).ToUniversalTime(),
+                VendorEarningsDate = DateTime.Now.Date.ToUniversalTime(),
+                EarningsReadDate = DateTime.Now.Date.ToUniversalTime(),
+                Ticker = ticker
+            });
+        }
+
         return;
     }
 
-    private async Task<T?> FetchDataFromAlpahVantageAsync<T>(string symbol, FilingNames filingNames)
+    private async Task<T?> FetchDataFromAlpahaVantageAsync<T>(string symbol, FilingNames filingNames)
     {
         try
         {

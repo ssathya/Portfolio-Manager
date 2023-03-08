@@ -3,16 +3,20 @@ using ApplicationModels.Indexes;
 using ApplicationModels.Quotes;
 using Microsoft.Extensions.Logging;
 using PsqlAccess;
+using Skender.Stock.Indicators;
 
 namespace TechnicalAnalysis.Processing;
 
 public class TechAnalProcessing
 {
+    #region Private Fields
+
     private const int ApproxWorkingDaysInAYear = 252;
     private const int BatchSize = 100;
-    private const int DollorVolumeDays = 20;
+    private const int DolorVolumeDays = 20;
     private const int MomentumWindow = 125;
     private const int MoneyFlowOffset = 14;
+    private const int SmaPeriods = 30;
     private readonly IRepository<Compute> computeRepository;
     private readonly IRepository<IndexComponent> idxRepository;
     private readonly ILogger<TechAnalProcessing> logger;
@@ -20,6 +24,10 @@ public class TechAnalProcessing
     private readonly List<decimal> xAxis = new();
     private readonly IRepository<YPrice> yRepository;
     private List<YPrice> yPrices = new();
+
+    #endregion Private Fields
+
+    #region Public Constructors
 
     public TechAnalProcessing(IRepository<YPrice> yRepository
         , IRepository<IndexComponent> idxRepository
@@ -38,6 +46,10 @@ public class TechAnalProcessing
         }
     }
 
+    #endregion Public Constructors
+
+    #region Public Methods
+
     public async Task<bool> ExecAsync()
     {
         List<string> tickers = await ObtainTickersToProcessAsync();
@@ -50,63 +62,34 @@ public class TechAnalProcessing
         return true;
     }
 
+    #endregion Public Methods
+
+    #region Private Methods
+
     private static void ComputeMoneyFlow(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
     {
-        yQuotes.Sort((a, b) => a.Date.CompareTo(b.Date));
-        int iterator = MoneyFlowOffset;
-        List<decimal> lows = new(); List<decimal> highs = new(); List<decimal> closes = new();
-        List<long> volumes = new();
-        while (iterator + MomentumWindow < yQuotes.Count)
+        var quotes = from yQuote in yQuotes
+                     select (Quote)yQuote;
+        IEnumerable<MfiResult> mfiResults = quotes.GetMfi(MoneyFlowOffset);
+        foreach (var cv in momentumsForTicker.ComputedValues)
         {
-            lows = yQuotes.Select(x => x.Low)
-                .Skip(iterator - MoneyFlowOffset)
-                .Take(MoneyFlowOffset)
-                .ToList();
-            highs = yQuotes.Select(x => x.High)
-                .Skip(iterator - MoneyFlowOffset)
-                .Take(MoneyFlowOffset)
-                .ToList();
-            closes = yQuotes.Select(x => x.ClosingPrice)
-                .Skip(iterator - MoneyFlowOffset)
-                .Take(MoneyFlowOffset)
-                .ToList();
-            volumes = yQuotes.Select(x => x.Volume)
-                .Skip(iterator - MoneyFlowOffset)
-                .Take(MoneyFlowOffset)
-                .ToList();
-            List<decimal> typicalPrices = new();
-            for (int i = 0; i < lows.Count; i++)
+            var mfiResult = mfiResults.FirstOrDefault(r => r.Date.Equals(cv.ReportingDate));
+            if (mfiResult != null)
             {
-                typicalPrices.Add((lows[i] + highs[i] + closes[i]) * volumes[i] / 3);
+                cv.MoneyFlow = (decimal)(mfiResult.Mfi ?? 0.0);
             }
-            decimal positiveMoneyFlow = 0M;
-            decimal negativeMoneyFlow = 0M;
-            for (int i = 1; i < typicalPrices.Count; i++)
-            {
-                if (typicalPrices[i] > typicalPrices[i - 1])
-                {
-                    positiveMoneyFlow += typicalPrices[i];
-                }
-                else
-                {
-                    negativeMoneyFlow += typicalPrices[i];
-                }
-            }
-            decimal moneyRatio = positiveMoneyFlow / negativeMoneyFlow;
-            decimal moneyRatioPercent = 100 - (100 / (1 + moneyRatio));
-            momentumsForTicker.ComputedValues[iterator].MoneyFlow = moneyRatioPercent;
-            iterator++;
         }
+        return;
     }
 
     private decimal ComputeDollarVolume(YPrice pricesForTicker)
     {
         var twentyDayValue = pricesForTicker.CompressedQuotes
             .OrderBy(r => r.Date)
-            .TakeLast(DollorVolumeDays)
+            .TakeLast(DolorVolumeDays)
             .Select(r => (r.ClosingPrice * r.Volume))
             .Sum();
-        return twentyDayValue / DollorVolumeDays;
+        return twentyDayValue / DolorVolumeDays;
     }
 
     private Compute ComputeMomentum(List<CompressedQuote> yQuotes, string ticker)
@@ -125,6 +108,11 @@ public class TechAnalProcessing
         while (iterator + MomentumWindow < yQuotes.Count)
         {
             var reportingDt = yQuotes[iterator + MomentumWindow].Date;
+            //Why did I comment out momentum compute?
+            //Checked the value of rSquared and it is closer to zero rather than closer than 1
+            //rSquared gives the confidence level. The algorithm is not confident. Then why use it
+            //Could have removed the entire section but leaving room for future change of mind.
+            /*
             var closingPrices = yQuotes
                 .Skip(iterator++)
                 .Take(MomentumWindow)
@@ -135,9 +123,11 @@ public class TechAnalProcessing
             var annualizedSlope = (Math.Pow(Math.Exp((double)slope), ApproxWorkingDaysInAYear) - 1) * 100;
             //Adjust for fitness
             annualizedSlope *= (double)rSquared;
+            */
+            iterator++;
             momentumValues.ComputedValues.Add(new()
             {
-                MomentumValue = (decimal)annualizedSlope,
+                //MomentumValue = (decimal)annualizedSlope,
                 ReportingDate = reportingDt.ToUniversalTime()
             });
         }
@@ -160,6 +150,7 @@ public class TechAnalProcessing
                 continue;
             }
             Compute momentumsForTicker = ComputeMomentum(yQuotes, ticker);
+            ComputeRocResults(yQuotes, momentumsForTicker);
             if (momentumsForTicker != null && !string.IsNullOrEmpty(momentumsForTicker.Ticker))
             {
                 ComputeMoneyFlow(yQuotes, momentumsForTicker);
@@ -196,6 +187,27 @@ public class TechAnalProcessing
         {
             await SaveValuesToDatabase(momentum);
             await SaveValuesToDatabase(momMfDolAvgs);
+        }
+    }
+
+    private void ComputeRocResults(List<CompressedQuote> yQuotes, Compute momentumsForTicker)
+    {
+        var quotes = from yQuote in yQuotes
+                     select (Quote)yQuote;
+        var results = quotes.GetRoc(MomentumWindow, SmaPeriods);
+        List<ComputedValues> computedValues = momentumsForTicker.ComputedValues;
+        if (results.Any())
+        {
+            foreach (var cv in computedValues)
+            {
+                RocResult? result = results.FirstOrDefault(x => x.Date.Equals(cv.ReportingDate));
+                if (result != null)
+                {
+                    cv.Roc = (decimal)(result.Roc ?? 0);
+                    cv.Sma = (decimal)(result.RocSma ?? 0);
+                    cv.MomentumValue = (decimal)(result.Roc ?? 0.0);
+                }
+            }
         }
     }
 
@@ -268,4 +280,6 @@ public class TechAnalProcessing
             logger.LogError($"{ex.Message}");
         }
     }
+
+    #endregion Private Methods
 }

@@ -23,7 +23,7 @@ public partial class AllSecurities
     protected MomMfDolAvgsService? momMfDolAvgs { get; set; }
 
     [Inject]
-    protected ExcelService? excelService { get; set; }
+    protected ExcelServiceAllSecurities? excelService { get; set; }
 
     [Inject]
     protected IBlazorDownloadFileService? BlazorDownloadFileService { get; set; }
@@ -35,7 +35,9 @@ public partial class AllSecurities
             return;
         }
         var fileName = $"MyReport{DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}.xlsx";
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         var response = await excelService.ExecAsync();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
         if (response == null)
         {
             return;

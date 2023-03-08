@@ -1,74 +1,49 @@
-﻿using ApplicationModels.FinancialStatement.AlphaVantage;
+﻿using BlazorDownloadFile;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc;
 using Presentation.Data;
-
-using ExtData = ApplicationModels.FinancialStatement.AlphaVantage;
 
 namespace Presentation.Pages.Industry;
 
 public partial class FinStatement
 {
-    //[Inject]
-    //public HttpClient? Client { get; set; }
-    [Inject]
-    protected BalanceSheetService? balanceSheet { get; set; }
-
-    [Inject]
-    protected CashFlowService? cashFlow { get; set; }
-
-    [Inject]
-    protected IncomeStatementService? incomeStatement { get; set; }
-
     [Inject]
     protected ILogger<FinStatement>? logger { get; set; }
 
     [Parameter]
     public string SelectedTicker { get; set; } = string.Empty;
 
-    protected BSReport BalanceSheetReport { get; set; } = new();
-    protected CashFlowReport CashFlowReport { get; set; } = new();
-    protected IncomeReport IncomeReport { get; set; } = new();
-    protected string selectedTab = "balanceSheet";
+    [Inject]
+    protected ExcelServiceFinancial? excelServiceFinancial { get; set; }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        selectedTab = "balanceSheet";
-        if (balanceSheet == null || cashFlow == null || incomeStatement == null || logger == null)
-        {
-            return;
-        }
-        ExtData.BalanceSheet? companyBS;
-        CashFlow? companyCF;
-        IncomeStatement? companyIS;
-        try
-        {
-            companyBS = await balanceSheet.ExecAsync(SelectedTicker);
-            companyCF = await cashFlow.ExecAsync(SelectedTicker);
-            companyIS = await incomeStatement.ExecAsync(SelectedTicker);
-            BalanceSheetReport = new();
-            CashFlowReport = new();
-            IncomeReport = new();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"Error getting financial information for ticker {SelectedTicker}");
-            logger.LogError($"{ex.Message}", ex);
-            return;
-        }
-        if (companyBS == null || companyCF == null || companyIS == null)
-        { return; }
-        BalanceSheetReport = companyBS.AnnualReports
-            .OrderByDescending(x => x.FiscalDateEnding)
-            .First();
-        CashFlowReport = companyCF.AnnualReports
-            .OrderByDescending(x => x.FiscalDateEnding).First();
-        IncomeReport = companyIS.AnnualReports
-            .OrderByDescending(x => x.FiscalDateEnding).First();
-    }
+    [Inject]
+    protected IBlazorDownloadFileService? blazorDownloadFileService { get; set; }
 
-    protected Task OnSelectedTabChanged(string name)
+    protected async Task ExcelDownload()
     {
-        selectedTab = name;
-        return Task.CompletedTask;
+        if (excelServiceFinancial == null || blazorDownloadFileService == null
+            || string.IsNullOrEmpty(SelectedTicker)) { return; }
+        string todayDate = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        string fileName = $"{SelectedTicker}-Financial-{todayDate}.xlsx";
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        FileContentResult? response = await excelServiceFinancial.ExecAsync(SelectedTicker);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        if (response == null) { return; }
+        var finalBytes = response.FileContents.ToArray();
+        DownloadFileResult? downloadFileResult = await blazorDownloadFileService.DownloadFile(
+            fileName,
+            finalBytes,
+            "application/octet-stream");
+        if (!downloadFileResult.Succeeded)
+        {
+            if (logger != null)
+            {
+                logger.LogInformation("Excel download failed");
+            }
+            else
+            {
+                await Console.Out.WriteLineAsync("Excel download failed");
+            }
+        }
     }
 }

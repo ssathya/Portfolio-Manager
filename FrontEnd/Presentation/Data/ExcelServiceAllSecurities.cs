@@ -8,13 +8,13 @@ using PsqlAccess;
 
 namespace Presentation.Data;
 
-public class ExcelService
+public class ExcelServiceAllSecurities
 {
-    private readonly ILogger<ExcelService> logger;
+    private readonly ILogger<ExcelServiceAllSecurities> logger;
     private readonly IRepository<MomMfDolAvg> momentumRepository;
     private readonly IRepository<SecurityWithPScore> secScoreRepository;
 
-    public ExcelService(ILogger<ExcelService> logger
+    public ExcelServiceAllSecurities(ILogger<ExcelServiceAllSecurities> logger
         , IRepository<SecurityWithPScore> secScoreRepository
         , IRepository<MomMfDolAvg> momentumRepository)
     {
@@ -36,7 +36,9 @@ public class ExcelService
         {
             logger.LogError($"Error extracting values from Db. Excel generation failed");
             logger.LogError(ex.Message);
+#pragma warning disable CS8603 // Possible null reference return.
             return null;
+#pragma warning restore CS8603 // Possible null reference return.
         }
         List<SecurityDetails> securityDetails = new();
         PopulateSecurityDetails(securityDetails, dbSecValues, momMfDolAvgs);

@@ -10,4 +10,5 @@ public class MomMfDolAvg : Entity
     public decimal Momentum { get; set; }
     public decimal DollarVolume { get; set; }
     public decimal MoneyFlow { get; set; }
+    public decimal SmA { get; set; }
 }

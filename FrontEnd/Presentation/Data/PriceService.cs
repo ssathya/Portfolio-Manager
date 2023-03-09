@@ -1,4 +1,5 @@
-﻿using ApplicationModels.Quotes;
+﻿using ApplicationModels.Compute;
+using ApplicationModels.Quotes;
 using PsqlAccess;
 
 namespace Presentation.Data;
@@ -7,12 +8,15 @@ public class PriceService
 {
     private readonly ILogger<PriceService> logger;
     private readonly IRepository<YPrice> priceRepository;
+    private readonly IRepository<Compute> computeRepository;
 
     public PriceService(ILogger<PriceService> logger
-        , IRepository<YPrice> priceRepository)
+        , IRepository<YPrice> priceRepository
+        , IRepository<Compute> computeRepository)
     {
         this.logger = logger;
         this.priceRepository = priceRepository;
+        this.computeRepository = computeRepository;
     }
 
     public async Task<YPrice?> ExecAsync(string ticker)
@@ -35,6 +39,26 @@ public class PriceService
         {
             logger.LogError($"Error reading pricing for security {ticker}");
             logger.LogError(ex.ToString());
+            return null;
+        }
+    }
+
+    public async Task<Compute?> GetComputedValues(string ticker)
+    {
+        if (string.IsNullOrWhiteSpace(ticker))
+        {
+            return new Compute();
+        }
+        try
+        {
+            Compute? computedValues = (await computeRepository.FindAll(r => r.Ticker.Equals(ticker.ToUpper().Trim())))
+               .FirstOrDefault();
+            return computedValues;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Error reading computed values for security {ticker}");
+            logger.LogError(ex.Message.ToString());
             return null;
         }
     }

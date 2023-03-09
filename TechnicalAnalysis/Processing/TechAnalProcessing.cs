@@ -167,7 +167,8 @@ public class TechAnalProcessing
                     Ticker = ticker,
                     DollarVolume = dollarVolume,
                     Momentum = tmpValues.MomentumValue,
-                    MoneyFlow = tmpValues.MoneyFlow
+                    MoneyFlow = tmpValues.MoneyFlow,
+                    SmA = tmpValues.Sma
                 });
                 counter++;
             }

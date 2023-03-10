@@ -24,6 +24,7 @@ public partial class PriceChart
     protected LineChart<decimal>? momentumChart = new();
     private List<decimal> closingPrices = new();
     private List<decimal> momentumValues = new();
+    private List<decimal> moneyFlowValues = new();
     protected YPrice? YPrice { get; set; }
     protected Compute? computes = new();
     private readonly List<string> backgroundColors = new() { ChartColor.FromRgba(255, 99, 132, 0.2f), ChartColor.FromRgba(54, 162, 235, 0.2f), ChartColor.FromRgba(255, 206, 86, 0.2f), ChartColor.FromRgba(75, 192, 192, 0.2f), ChartColor.FromRgba(153, 102, 255, 0.2f), ChartColor.FromRgba(255, 159, 64, 0.2f) };
@@ -81,6 +82,12 @@ public partial class PriceChart
                                    .ToList().Contains(x.ReportingDate.Date))
             .Select(x => x.MomentumValue)
             .ToList();
+        moneyFlowValues.Clear();
+        moneyFlowValues = computes.ComputedValues.Where(x => (from values in selectedReportingDates
+                                                              select values.Dates.Date)
+                                   .ToList().Contains(x.ReportingDate.Date))
+            .Select(x => x.MoneyFlow)
+            .ToList();
         List<string> selectedDates = selectedReportingDates.Select(x => x.Dates.ToString("MMM-dd")).ToList();
         priceChart ??= new();
         await priceChart.Clear();
@@ -97,17 +104,28 @@ public partial class PriceChart
         };
         momentumChart ??= new();
         await momentumChart.Clear();
+
         LineChartDataset<decimal> momentumChartDataset = new LineChartDataset<decimal>
         {
             Label = "ROC",
             Data = momentumValues,
             BackgroundColor = backgroundColors[0],
-            BorderColor = borderColors[0],
+            BorderColor = borderColors,
             Fill = false,
             PointRadius = 3,
             CubicInterpolationMode = "monotone"
         };
         await priceChart.AddLabelsDatasetsAndUpdate(selectedDates, priceChartDataset);
+        await momentumChart.AddDataSet(new LineChartDataset<decimal>
+        {
+            Label = "Money flow",
+            Data = moneyFlowValues,
+            BackgroundColor = backgroundColors[0],
+            BorderColor = borderColors,
+            Fill = false,
+            PointRadius = 3,
+            CubicInterpolationMode = "monotone"
+        });
         await momentumChart.AddLabelsDatasetsAndUpdate(selectedDates, momentumChartDataset);
     }
 }

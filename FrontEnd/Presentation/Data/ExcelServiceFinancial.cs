@@ -66,14 +66,29 @@ public class ExcelServiceFinancial
         p.Workbook.Properties.Title = "Balance Sheets";
         p.Workbook.Properties.Author = "Linux System";
 
+        List<BSReport> bSReports = new();
+        bSReports.AddRange(balanceSheets.AnnualReports);
+        bSReports.AddRange(balanceSheets.QuarterlyReports);
         ExcelWorksheet wsBS = p.Workbook.Worksheets.Add("Balance Sheets");
-        wsBS.Cells[1, 1].LoadFromCollection(balanceSheets.AnnualReports, true, TableStyles.Medium12);
+        wsBS.Cells[1, 1].LoadFromCollection(bSReports, true, TableStyles.None)
+            .AutoFitColumns();
+        bSReports.Clear();
 
+        List<CashFlowReport> cashFlowReports = new();
+        cashFlowReports.AddRange(cashFlows.AnnualReports);
+        cashFlowReports.AddRange(cashFlows.QuarterlyReports);
         ExcelWorksheet wsIS = p.Workbook.Worksheets.Add("Income Statements");
-        wsIS.Cells[1, 1].LoadFromCollection(incomeStatements.AnnualReports, true, TableStyles.Medium12);
+        wsIS.Cells[1, 1].LoadFromCollection(cashFlowReports, true, TableStyles.None)
+            .AutoFitColumns();
+        cashFlowReports.Clear();
 
+        List<IncomeReport> incomeReports = new();
+        incomeReports.AddRange(incomeStatements.AnnualReports);
+        incomeReports.AddRange(incomeStatements.QuarterlyReports);
         ExcelWorksheet wsCF = p.Workbook.Worksheets.Add("Cash Flows");
-        wsCF.Cells[1, 1].LoadFromCollection(cashFlows.AnnualReports, true, TableStyles.Medium12);
+        wsCF.Cells[1, 1].LoadFromCollection(incomeReports, true, TableStyles.None)
+            .AutoFitColumns();
+        incomeReports.Clear();
 
         exportStream = new MemoryStream();
         p.SaveAs(exportStream);

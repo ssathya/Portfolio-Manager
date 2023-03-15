@@ -11,10 +11,9 @@ public class TechAnalProcessing
 {
     #region Private Fields
 
-    private const int ApproximateWorkingDaysInAYear = 41;
     private const int BatchSize = 100;
     private const int DolorVolumeDays = 20;
-    private const int MomentumWindow = 125;
+    private const int MomentumWindow = 41;
     private const int MoneyFlowOffset = 14;
     private const int SmaPeriods = 30;
     private readonly IRepository<Compute> computeRepository;

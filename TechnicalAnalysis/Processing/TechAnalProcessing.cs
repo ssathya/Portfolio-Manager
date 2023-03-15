@@ -11,7 +11,7 @@ public class TechAnalProcessing
 {
     #region Private Fields
 
-    private const int ApproxWorkingDaysInAYear = 252;
+    private const int ApproximateWorkingDaysInAYear = 41;
     private const int BatchSize = 100;
     private const int DolorVolumeDays = 20;
     private const int MomentumWindow = 125;

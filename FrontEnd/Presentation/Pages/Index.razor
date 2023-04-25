@@ -3,231 +3,216 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <div class="body1">
-    <div class="letter">
-        <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
-            <Items>
-                <Tab Name="welcome">Welcome</Tab>
-                <Tab Name="whyInvest">Why Invest</Tab>
-                <Tab Name="investmentVehicles">Where To Invest</Tab>
-                <Tab Name="universe">Universe</Tab>
-            </Items>
-            <Content>
-                <TabPanel Name="welcome">
-                    <div class="container bg-dark">
-                        <div class="container bg-dark text-white-50">
-                            <div class="row align-items-center">
-                                <div class="col-md-7">
-                                    <p>
-                                        Welcome to our investment website! We are glad you have chosen to visit us and explore the world of investment opportunities. Our goal is to provide you with the knowledge and resources you need to make informed investment decisions and reach your financial goals.
-                                        <br /><br />
-                                        We understand that investing can be a daunting task for many people, especially for those who are new to the process. That's why we have created a user-friendly website that is easy to navigate and filled with informative articles and educational materials.
-                                        <br /><br />
-                                        We also have a user-friendly platform where you can manage your investments and track your portfolio performance in real-time.
-                                        <br /><br />
-                                        We are committed to providing you with the tools and support you need to achieve your financial goals. Whether you are new to investing or a seasoned pro, we are here to help you succeed.
-                                    </p>
-                                </div>
-                                <div class="col-md-5">
-                                    <img class="img-fluid rounded" src="/images/_47bf5d2e-9f49-490b-a6ad-1418cd8cb332.jpg" />
-                                </div>
-                            </div>
-                        </div>
-                        <br />
-                        <div class="container bg-dark text-white-50">
-                            <div class="row align-items-center">
-                                <div class="col-md-5">
-                                    <img class="img-fluid rounded" src="/images/_5312ee6e-4919-44c1-9463-4f1248605f0e.jpg" />
-                                </div>
-                                <div class="col-md-7">
-                                    <p>
-                                        If you have some money saved up and you are wondering what to do with it, you might be tempted to just leave it in the bank and earn some interest. However, this might not be the best option for your financial future. In this blog post, I will explain why investing in stocks is a better option than leaving your capital in the bank.
-                                        <br /><br />
-                                        First of all, let's talk about interest rates. Interest rates are the percentage of money that you earn or pay for borrowing or lending money. When you deposit money in the bank, you are lending it to the bank and they pay you interest for that. When you borrow money from the bank, you are paying them interest for that. The difference between the interest rate that the bank pays you and the interest rate that they charge you is called the spread, and that's how banks make money.
-                                        <br /><br />
-                                        Now, the problem with leaving your money in the bank is that interest rates are very low right now. According to the Federal Reserve, the average annual percentage yield (APY) for savings accounts in the US was 0.06% as of April 2021. That means that if you have $10,000 in your savings account, you will earn only $6 in interest in a year. That's not even enough to buy a cup of coffee!
-                                        <br /><br />
-                                        On the other hand, investing in stocks can offer you much higher returns. Stocks are shares of ownership in a company. When you buy a stock, you become a part-owner of that company and you can benefit from its growth and profits. The stock market is where stocks are bought and sold, and it reflects the performance of the economy and various industries.
-                                        <br /><br />
-                                        The average annual return of the stock market over the past 10 years was 13.6%, according to Morningstar. That means that if you had invested $10,000 in the stock market 10 years ago, you would have $35,061 today. That's more than triple your initial investment!
-                                        <br /><br />
-                                        Of course, investing in stocks also comes with risks. The stock market can be volatile and unpredictable, and there is no guarantee that you will make money or even get back your original investment. You have to do your research, diversify your portfolio, and be prepared for market fluctuations.
-                                        <br /><br />
-                                        However, if you are willing to take some calculated risks and invest for the long term, investing in stocks can be a great way to grow your wealth and achieve your financial goals. Leaving your money in the bank might seem safe and easy, but it will not help you beat inflation or build your net worth.
-                                        <br /><br />
-                                        So, what are you waiting for? Start investing in stocks today and enjoy the benefits of compound interest and capital appreciation. You will thank yourself later!
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <br />
-                        <div class="container bg-dark text-white-50">
-                            <div class="row align-items-center">
-                                <div class="col-md-7">
-                                    <p>
-                                        Are you looking for ways to grow your money and achieve your financial goals? If so, you might be interested in learning about various investment options that can help you diversify your portfolio and increase your returns. In this blog post, I will share with you some of the most popular and profitable investment options that you can consider, along with their benefits and risks. Let's get started!
-                                        <br /><br />
-                                        <b>1. Stocks:</b> Stocks are shares of ownership in a company that you can buy and sell on the stock market. Stocks are one of the most common and well-known investment options, as they offer the potential for high returns in the long run. However, stocks are also very volatile and risky, as they depend on the performance of the company and the market conditions. You need to do your research and analysis before investing in stocks, and be prepared for the possibility of losing money.
-                                        <br /><br />
-                                        <b>2. Bonds:</b> Bonds are debt instruments that pay a fixed interest rate to the lender (investor) over a specified period of time. Bonds are considered to be safer and more stable than stocks, as they provide a steady income stream and have lower default risk. However, bonds also have lower returns than stocks, and are subject to interest rate risk and inflation risk. You need to consider the maturity date, credit rating, and yield of the bond before investing in it.
-                                        <br /><br />
-                                        <b>3. Mutual funds:</b> Mutual funds are pooled investments that are managed by a professional fund manager who invests in a variety of securities such as stocks, bonds, commodities, etc. Mutual funds are ideal for investors who want to diversify their portfolio and benefit from the expertise of the fund manager. However, mutual funds also have fees and expenses that can reduce your returns, and are subject to market risk and manager risk. You need to compare the performance, fees, objectives, and risks of different mutual funds before investing in them.
-                                        <br /><br />
-                                        <b>4. Exchange-traded funds (ETFs):</b> ETFs are similar to mutual funds, except that they trade on the stock exchange like stocks. ETFs are designed to track the performance of a specific index, sector, commodity, or asset class. ETFs are attractive for investors who want to gain exposure to a particular market or theme without having to buy individual securities. However, ETFs also have fees and expenses that can affect your returns, and are subject to market risk and tracking error. You need to understand the underlying index or asset that the ETF follows before investing in it.
-                                        <br /><br />
-                                        <b>5. Real estate:</b> Real estate is another popular investment option that involves buying and selling physical properties such as land, buildings, houses, etc. Real estate can provide you with rental income, capital appreciation, tax benefits, and diversification benefits. However, real estate also requires a lot of capital, maintenance, management, and legal issues. You need to evaluate the location, condition, market value, and potential of the property before investing in it.
-                                        <br /><br />
-                                        These are some of the various investment options that you can explore to grow your wealth and achieve your financial goals. Of course, there are many other investment options that you can consider depending on your risk appetite, time horizon, budget, and preferences. The key is to do your homework and make informed decisions that suit your needs and expectations. Remember that investing is not a get-rich-quick scheme, but a long-term journey that requires patience, discipline, and strategy.
-                                    </p>
-                                </div>
-                                <div class="col-md-5">
-                                    <img src="/images/_347055a3-1329-4f58-97f9-5c02b5a8ef06.jpg" class="img-fluid rounded" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="container bg-dark text-white-50">
-                            <div class="row align-items-center">
-                                <div class="col-md-4">
-                                    <img src="/images/_a681d5ee-57fe-4599-be6e-1b1e89460681.jpg" class="img-fluid rounded" />
-                                </div>
-                                <div class="col-md-8">
-                                    <p>
-                                        The stock selection universe is the set of stocks that an investor or a fund manager can choose from when making investment decisions. The stock selection universe can vary depending on the investment objectives, strategies, criteria, and constraints of the investor or the fund manager. For example, some investors may only invest in stocks that meet certain ethical, social, or environmental standards, while others may focus on stocks that have high growth potential, low volatility, or strong dividends. The stock selection universe can also be influenced by external factors, such as market conditions, regulations, availability of data, and liquidity.
-                                        <br /><br />
-                                        The stock selection universe is an important concept for portfolio construction and performance evaluation. By defining the stock selection universe, an investor can identify the opportunities and risks in the market, as well as benchmark their performance against a relevant index or peer group. The stock selection universe can also help to diversify the portfolio and reduce the exposure to unsystematic risk. However, the stock selection universe should not be too narrow or too broad, as this may limit the investment options or increase the complexity and cost of managing the portfolio.
-                                        <br /><br />
-                                        <b>The S&P 500</b> is a stock market index that tracks the performance of 500 large companies listed on stock exchanges in the United States. It is one of the most widely followed benchmarks for the US economy. But how are companies selected to be part of this index?
-                                        <br /><br />
-                                        The selection process is based on a set of criteria that include market capitalization, liquidity, financial viability, sector representation, and public float. The companies must have a market capitalization of at least $13.1 billion, a minimum monthly trading volume of 250,000 shares, positive earnings in the most recent four quarters, and at least 50% of their shares available to the public. The companies must also belong to one of the 11 sectors that make up the index, such as technology, health care, or energy.
-                                        <br /><br />
-                                        The selection committee consists of analysts and economists from S&P Dow Jones Indices, a division of S&P Global that manages the index. The committee meets on a quarterly basis to review the eligibility of existing and potential constituents, and makes changes as needed to reflect the evolving US market. The changes are usually announced a week before they take effect, and are implemented after the close of trading on the third Friday of March, June, September, and December.
-                                        <br /><br />                                        
-                                        <b>The Nasdaq-100</b> is an index that tracks the performance of the 100 largest non-financial companies listed on the Nasdaq stock exchange. The companies are selected based on their market capitalization, which is the total value of their outstanding shares. The index is reviewed and updated quarterly to reflect changes in the market and the eligibility criteria. To be part of the Nasdaq-100, a company must meet certain requirements, such as:
-                                        <ul>
-                                            <li>Being listed exclusively on the Nasdaq Global Select Market or the Nasdaq Global Market</li>
-                                            <li>Having an average daily trading volume of at least 200,000 shares</li>
-                                            <li>Having a publicly traded security for at least three months</li>
-                                            <li>Not being involved in bankruptcy proceedings or financial distress</li>
-                                            <li>Not being a closed-end fund, exchange-traded fund, limited partnership, or royalty trust</li>
-                                        </ul>
-                                        The Nasdaq-100 is a widely followed benchmark that represents some of the most innovative and influential companies in various sectors, such as technology, biotechnology, consumer services, and retail. The index is also used as the basis for several exchange-traded products that allow investors to gain exposure to the Nasdaq-100 market.
-                                        <br /><br />                                        
-                                        <b>The Dow Jones Industrial Average (DOW-30)</b> is a stock market index that tracks the performance of 30 large U.S. companies. The companies are selected by a committee of experts from S&P Dow Jones Indices, a joint venture of S&P Global and News Corp. The committee considers factors such as market capitalization, industry representation, trading volume, financial stability, and growth potential. The committee reviews the composition of the index regularly and makes changes as needed to reflect the changing U.S. economy.
-                                        <br /><br />
-                                        <b><i>Our investment universe will comprise stocks from the S&para;P-500, NASDAQ-100, and DOW-30 indices.</i></b>
-                                    </p>
-                                </div>                                
-                            </div>
-                        </div>
+    <div class="letter rounded">
+        <div class="container bg-dark rounded">
+            <div class="container bg-dark text-white-50">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p>
+                            Welcome to our investment website! We are glad you have chosen to visit us and explore the world
+                            of investment opportunities. Our goal is to provide you with the knowledge and resources you need
+                            to make informed investment decisions and reach your financial goals.
+                            <br /><br />
+                            We understand that investing can be a daunting task for many people, especially for those who
+                            are new to the process. That's why we have created a user-friendly website that is easy to
+                            navigate and filled with informative articles and educational materials.
+                            <br /><br />
+                            We also have a user-friendly platform where you can manage your investments and track your
+                            portfolio performance in real-time.
+                            <br /><br />
+                            We are committed to providing you with the tools and support you need to achieve your financial
+                            goals. Whether you are new to investing or a seasoned pro, we are here to help you succeed.
+                        </p>
                     </div>
-                    <br />
-                    <p>
-                        Welcome to our investment website! We are glad you have chosen to visit us and explore the world of investment opportunities. Our goal is to provide you with the knowledge and resources you need to make informed investment decisions and reach your financial goals.
-                    </p><p>
-                        We understand that investing can be a daunting task for many people, especially for those who are new to the process. That's why we have created a user-friendly website that is easy to navigate and filled with informative articles and educational materials.
-                    </p><p>
-                        We also have a user-friendly platform where you can manage your investments and track your portfolio performance in real-time.
-                    </p><p>
-                        We are committed to providing you with the tools and support you need to achieve your financial goals. Whether you are new to investing or a seasoned pro, we are here to help you succeed.
-                    </p><p>
-                        Thank you for choosing us as your investment partner. We look forward to working with you and wish you all the best in your investment journey.
-                    </p><p>
-                        Go over the tabs and then if you decide to follow this site's investment advice then select appropriate menu item on the top.
-                    </p>
-                </TabPanel>
-                <TabPanel Name="whyInvest">
-                    <br />
-                    <p>
-                        There are several reasons why investing in stocks may be a better option than leaving capital in the bank:
-                        <ol>
-                            <li>
-                                Potential for higher returns: The stock market has historically provided higher returns than other investments, such as bonds or savings accounts. While there is always a risk of loss, stocks have the potential to provide much higher returns over the long term.<br />
-                            </li>
-                            <li>
-                                Inflation protection: Inflation is the rate at which the general level of prices for goods and services is rising, and subsequently purchasing power of currency is falling. The value of money in a savings account will decrease over time due to inflation, while stocks have the potential to appreciate in value, providing a hedge against inflation.
-                            </li>
-                            <li>
-                                Diversification: Investing in stocks allows investors to diversify their portfolio across different sectors, industries, and geographic regions, which can help to reduce risk.
-                            </li>
-                            <li>
-                                Liquidity: stocks are a highly liquid investment, meaning that they can be easily bought and sold on the stock market. This allows investors to access their money quickly and easily, which can be useful for unexpected expenses or emergencies.
-                            </li>
-                            <li>
-                                Potential for compound growth: Stocks offer the potential for compound growth, meaning that the returns from the stock market can be reinvested to earn additional returns, which can help to grow wealth over time.
-                            </li>
-                        </ol>
-                        It's important to keep in mind that investing in stocks comes with inherent risks, and it's important to do your own research, understand the risks and have a well-diversified portfolio. Additionally, it's not recommended to invest money that you may need in the short term, or money that you can't afford to lose.
-                    </p>
-                </TabPanel>
-                <TabPanel Name="investmentVehicles">
-                    <br />
-                    There are many different types of investment vehicles available to investors, each with its own unique characteristics and potential benefits. Some of the most common investment vehicles include:
-                    <ol>
-                        <li>
-                            Stocks: Stocks, also known as equities, are shares of ownership in a publicly traded company. Investing in stocks allows investors to participate in the growth and success of a company and potentially earn dividends or capital appreciation.
-                        </li>
-                        <li>
-                            Bonds: Bonds are debt securities issued by companies or governments. They pay a fixed rate of interest to investors and have a maturity date, at which point the bond issuer repays the principal amount to the bondholder.
-                        </li>
-                        <li>
-                            Mutual Funds: Mutual funds are investment vehicles that pool money from multiple investors and invest it in a diversified portfolio of stocks, bonds, and other securities. They are managed by professional fund managers, and the returns are shared among the investors based on the number of shares they own.
-                        </li>
-                        <li>
-                            Exchange-Traded Funds (ETFs): ETFs are similar to mutual funds in that they also pool money from multiple investors and invest it in a diversified portfolio of stocks, bonds, and other securities. However, unlike mutual funds, ETFs are traded on stock exchanges and their prices fluctuate throughout the day based on supply and demand.
-                        </li>
-                        <li>
-                            Real Estate: Investing in real estate can take many forms, such as buying a property to rent out, investing in a REIT (Real Estate Investment Trust), or investing in a real estate crowd funding platform. It's a good way to diversify a portfolio, and it can provide a steady stream of income and potential appreciation in value.
-                        </li>
-                        <li>
-                            Commodities: Commodities are natural resources that can be bought and sold, such as gold, oil, and agricultural products. Investing in commodities can provide a hedge against inflation and provide diversification to a portfolio.
-                        </li>
-                        <li>
-                            Alternative Investments: Alternative investments are investments that are not traditional stocks, bonds, or cash. They include investments such as private equity, hedge funds, venture capital, and derivatives. They are generally considered to be more complex and higher risk than traditional investments and are typically only suitable for more experienced investors.
-                        </li>
-                    </ol>
-                    <p>
-                        It's important to note that the best investment vehicle for you depends on your investment goals, risk tolerance, and time horizon. A well-diversified portfolio with a mix of different investment vehicles can help to reduce risk and maximize returns.
-                    </p><p>
-                        We are going to discuss about only one investment vehicles <b>Stocks</b>. Even in stocks our universe is going to be only around 525 stocks that are listed either in DOW-30, NASDAQ-100, or S&amp;P 500.
-                    </p>
-                </TabPanel>
-                <TabPanel Name="universe">
-                    <br />
-                    Well this is an interesting name; <b>Universe!</b> There are around 2500 stocks actively traded in NYSE and almost double number of stocks in NASDAQ.
-                    As a small investor we do not have the time and resources to study those 7000+ firms and hence we are going to narrow our universe of stocks!
-                    <p>
-                        Our screening begins by only selecting industries that are listed in S&amp;P-500, NASDAQ-100 or DOW-30. Why? Lets start by checking out the section criteria for being included in S&amp;P-500.
-                    </p><p>
-                        The S&P 500 index is a market capitalization-weighted index that comprises the 500 largest publicly traded companies in the United States. The index is maintained and calculated by Standard & Poor's (S&P) and is considered to be a benchmark for the overall performance of the U.S. stock market.
-                    </p><p>
-                        The process of selecting the index components is based on several criteria:
-                    </p>
-                    <ol>
-                        <li>
-                            Market Capitalization: To be included in the S&P 500, a company must have a market capitalization of at least $8.2 billion as of 2021, and it should be among the top 85% of companies in terms of market capitalization.
-                        </li>
-                        <li>
-                            Liquidity: The company's shares must be highly liquid and easy to trade, meaning that there should be a large number of shares available for purchase and sale at any given time.
-                        </li>
-                        <li>
-                            Financial Viability: The company must have a strong financial position and be able to generate consistent profits.
-                        </li>
-                        <li>
-                            Public Float: The company's shares must be publicly traded, meaning that they are available for purchase by individual investors.
-                        </li>
-                        <li>
-                            Sector Representation: The index should be diversified across different sectors, and should not be overly weighted in any particular sector.
-                        </li>
-                    </ol>
-                    <p>
-                        Once a company meets these criteria, it will be included in the S&P 500 index and its weight in the index will be determined by its market capitalization. The index is reviewed and reconstituted every quarter, and any changes to the index are based on the most recent market capitalization data.
-                    </p><p>
-                        NASDAQ-100, and DOW have their own rules but all three include only firms whose financial are strong and profitable. We are interested only in profitable firms. Aren't we?
-                    </p><p>
-                        We are picking only if a firm is listed at least in one of the three major indexes.
-                    </p>
-                </TabPanel>
-            </Content>
-        </Tabs>
+                    <div class="col-md-6">
+                        <img class="img-fluid rounded" src="/images/_47bf5d2e-9f49-490b-a6ad-1418cd8cb332.jpg" />
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="container bg-dark text-white-50">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <img class="img-fluid rounded" src="/images/_5312ee6e-4919-44c1-9463-4f1248605f0e.jpg" />
+                    </div>
+                    <div class="col-md-7">
+                        <p>
+                            If you have some money saved up and you are wondering what to do with it, you might be tempted to
+                            just leave it in the bank and earn some interest. However, this might not be the best option for
+                            your financial future. Let us examine why investing in stocks is a better option than leaving
+                            your capital in the bank.
+                            <br /><br />
+                            First of all, let's talk about interest rates. Interest rates are the percentage of money that
+                            you earn or pay for borrowing or lending money. When you deposit money in the bank, you are
+                            lending it to the bank and they pay you interest for that. When you borrow money from the bank,
+                            you are paying them interest for that. The difference between the interest rate that the bank
+                            pays you and the interest rate that they charge you is called the spread, and that's how banks
+                            make money.
+                            <br /><br />
+                            Now, the problem with leaving your money in the bank is that interest rates are very low right now.
+                            According to the Federal Reserve, the average annual percentage yield (APY) for savings
+                            accounts in the US was 0.06% as of April 2021. That means that if you have $10,000 in your
+                            savings account, you will earn only $6 in interest in a year. That's not even enough to buy
+                            a cup of coffee!
+                            <br /><br />
+                            On the other hand, investing in stocks can offer you much higher returns. Stocks are shares
+                            of ownership in a company. When you buy a stock, you become a part-owner of that company and
+                            you can benefit from its growth and profits. The stock market is where stocks are bought and
+                            sold, and it reflects the performance of the economy and various industries.
+                            <br /><br />
+                            The average annual return of the stock market over the past 10 years was 13.6%, according to
+                            Morningstar. That means that if you had invested $10,000 in the stock market 10 years ago,
+                            you would have $35,061 today. That's more than triple your initial investment!
+                            <br /><br />
+                            Of course, investing in stocks also comes with risks. The stock market can be volatile
+                            and unpredictable, and there is no guarantee that you will make money or even get back your
+                            original investment. You have to do your research, diversify your portfolio, and be prepared
+                            for market fluctuations.
+                            <br /><br />
+                            However, if you are willing to take some calculated risks and invest for the long term,
+                            investing in stocks can be a great way to grow your wealth and achieve your financial goals.
+                            Leaving your money in the bank might seem safe and easy, but it will not help you beat inflation
+                            or build your net worth.
+                            <br /><br />
+                            So, what are you waiting for? Start investing in stocks today and enjoy the benefits of
+                            compound interest and capital appreciation. You will thank yourself later!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="container bg-dark text-white-50">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <p>
+                            Are you looking for ways to grow your money and achieve your financial goals? If so, you might
+                            be interested in learning about various investment options that can help you diversify your
+                            portfolio and increase your returns. Let us focus on some of the most popular and profitable
+                            investment options that you can consider, along with their benefits and risks.
+                            Let's get started!
+                            <br /><br />
+                            <b>1. Stocks:</b> Stocks are shares of ownership in a company that you can buy and sell on the
+                            stock market. Stocks are one of the most common and well-known investment options, as they
+                            offer the potential for high returns in the long run. However, stocks are also very volatile
+                            and risky, as they depend on the performance of the company and the market conditions. You need
+                            to do your research and analysis before investing in stocks, and be prepared for the possibility
+                            of losing money.
+                            <br /><br />
+                            <b>2. Bonds:</b> Bonds are debt instruments that pay a fixed interest rate to the lender
+                            (investor) over a specified period of time. Bonds are considered to be safer and more stable
+                            than stocks, as they provide a steady income stream and have lower default risk. However, bonds
+                            also have lower returns than stocks, and are subject to interest rate risk and inflation risk.
+                            You need to consider the maturity date, credit rating, and yield of the bond before investing
+                            in it.
+                            <br /><br />
+                            <b>3. Mutual funds:</b> Mutual funds are pooled investments that are managed by a professional
+                            fund manager who invests in a variety of securities such as stocks, bonds, commodities, etc.
+                            Mutual funds are ideal for investors who want to diversify their portfolio and benefit from the
+                            expertise of the fund manager. However, mutual funds also have fees and expenses that can reduce
+                            your returns, and are subject to market risk and manager risk. You need to compare the performance,
+                            fees, objectives, and risks of different mutual funds before investing in them.
+                            <br /><br />
+                            <b>4. Exchange-traded funds (ETFs):</b> ETFs are similar to mutual funds, except that they trade
+                            on the stock exchange like stocks. ETFs are designed to track the performance of a specific index,
+                            sector, commodity, or asset class. ETFs are attractive for investors who want to gain exposure to
+                            a particular market or theme without having to buy individual securities. However, ETFs also have
+                            fees and expenses that can affect your returns, and are subject to market risk and tracking error.
+                            You need to understand the underlying index or asset that the ETF follows before investing in it.
+                            <br /><br />
+                            <b>5. Real estate:</b> Real estate is another popular investment option that involves buying and
+                            selling physical properties such as land, buildings, houses, etc. Real estate can provide you
+                            with rental income, capital appreciation, tax benefits, and diversification benefits. However,
+                            real estate also requires a lot of capital, maintenance, management, and legal issues. You need
+                            to evaluate the location, condition, market value, and potential of the property before
+                            investing in it.
+                            <br /><br />
+                            These are some of the various investment options that you can explore to grow your wealth and achieve
+                            your financial goals. Of course, there are many other investment options that you can consider
+                            depending on your risk appetite, time horizon, budget, and preferences. The key is to do your
+                            homework and make informed decisions that suit your needs and expectations. Remember that
+                            investing is not a get-rich-quick scheme, but a long-term journey that requires patience,
+                            discipline, and strategy.
+                        </p>
+                    </div>
+                    <div class="col-md-5">
+                        <img src="/images/_347055a3-1329-4f58-97f9-5c02b5a8ef06.jpg" class="img-fluid rounded" />
+                    </div>
+                </div>
+            </div>
+            <div class="container bg-dark text-white-50">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <img src="/images/_a681d5ee-57fe-4599-be6e-1b1e89460681.jpg" class="img-fluid rounded" />
+                    </div>
+                    <div class="col-md-8">
+                        <p>
+                            The stock selection universe is the set of stocks that an investor or a fund manager can choose
+                            from when making investment decisions. The stock selection universe can vary depending on the
+                            investment objectives, strategies, criteria, and constraints of the investor or the fund manager.
+                            For example, some investors may only invest in stocks that meet certain ethical, social, or
+                            environmental standards, while others may focus on stocks that have high growth potential,
+                            low volatility, or strong dividends. The stock selection universe can also be influenced by
+                            external factors, such as market conditions, regulations, availability of data, and liquidity.
+                            <br /><br />
+                            The stock selection universe is an important concept for portfolio construction and performance
+                            evaluation. By defining the stock selection universe, an investor can identify the opportunities
+                            and risks in the market, as well as benchmark their performance against a relevant index or
+                            peer group. The stock selection universe can also help to diversify the portfolio and reduce
+                            the exposure to unsystematic risk. However, the stock selection universe should not be too
+                            narrow or too broad, as this may limit the investment options or increase the complexity and
+                            cost of managing the portfolio.
+                            <br /><br />
+                            <b>The S&P 500</b> is a stock market index that tracks the performance of 500 large companies
+                            listed on stock exchanges in the United States. It is one of the most widely followed benchmarks
+                            for the US economy. But how are companies selected to be part of this index?
+                            <br /><br />
+                            The selection process is based on a set of criteria that include market capitalization,
+                            liquidity, financial viability, sector representation, and public float. The companies must have
+                            a market capitalization of at least $13.1 billion, a minimum monthly trading volume of
+                            250,000 shares, positive earnings in the most recent four quarters, and at least 50% of their
+                            shares available to the public. The companies must also belong to one of the 11 sectors that
+                            make up the index, such as technology, health care, or energy.
+                            <br /><br />
+                            The selection committee consists of analysts and economists from S&P Dow Jones Indices, a division
+                            of S&P Global that manages the index. The committee meets on a quarterly basis to review the
+                            eligibility of existing and potential constituents, and makes changes as needed to reflect
+                            the evolving US market. The changes are usually announced a week before they take effect, and
+                            are implemented after the close of trading on the third Friday of March, June, September,
+                            and December.
+                            <br /><br />
+                            <b>The Nasdaq-100</b> is an index that tracks the performance of the 100 largest non-financial companies
+                            listed on the Nasdaq stock exchange. The companies are selected based on their market capitalization,
+                            which is the total value of their outstanding shares. The index is reviewed and updated quarterly to
+                            reflect changes in the market and the eligibility criteria. To be part of the Nasdaq-100, a company
+                            must meet certain requirements, such as:
+                            <ul>
+                                <li>Being listed exclusively on the Nasdaq Global Select Market or the Nasdaq Global Market</li>
+                                <li>Having an average daily trading volume of at least 200,000 shares</li>
+                                <li>Having a publicly traded security for at least three months</li>
+                                <li>Not being involved in bankruptcy proceedings or financial distress</li>
+                                <li>Not being a closed-end fund, exchange-traded fund, limited partnership, or royalty trust</li>
+                            </ul>
+                        </p>
+                        <p>
+                            The Nasdaq-100 is a widely followed benchmark that represents some of the most innovative and
+                            influential companies in various sectors, such as technology, biotechnology, consumer services, and
+                            retail. The index is also used as the basis for several exchange-traded products that allow investors
+                            to gain exposure to the Nasdaq-100 market.
+                            <br /><br />
+                            <b>The Dow Jones Industrial Average (DOW-30)</b> is a stock market index that tracks the performance
+                            of 30 large U.S. companies. The companies are selected by a committee of experts from S&P Dow Jones
+                            Indices, a joint venture of S&P Global and News Corp. The committee considers factors such as market
+                            capitalization, industry representation, trading volume, financial stability, and growth potential.
+                            The committee reviews the composition of the index regularly and makes changes as needed to reflect
+                            the changing U.S. economy.
+                            <br /><br />
+                            <b><i>Our investment universe will comprise stocks from the S&para;P-500, NASDAQ-100, and DOW-30 indices.</i></b>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
     </div>
 </div>
 

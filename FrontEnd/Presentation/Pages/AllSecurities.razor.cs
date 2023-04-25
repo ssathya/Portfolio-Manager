@@ -9,24 +9,38 @@ namespace Presentation.Pages;
 
 public partial class AllSecurities
 {
+    #region Protected Fields
+
     protected bool DisplaySubPages;
     protected decimal selectedDV, selectedMom, selectedMF;
     protected int selectedPScore;
 
+    #endregion Protected Fields
+
+    #region Private Fields
+
     private List<SecurityDetails> indexComponents = new();
     private SecurityDetails selectedIC = new();
 
-    [Inject]
-    protected SecurityWithPScoresService? securityWithPScores { get; set; }
+    #endregion Private Fields
+
+    #region Protected Properties
 
     [Inject]
-    protected MomMfDolAvgsService? momMfDolAvgs { get; set; }
+    protected IBlazorDownloadFileService? BlazorDownloadFileService { get; set; }
 
     [Inject]
     protected ExcelServiceAllSecurities? excelService { get; set; }
 
     [Inject]
-    protected IBlazorDownloadFileService? BlazorDownloadFileService { get; set; }
+    protected MomMfDolAvgsService? momMfDolAvgs { get; set; }
+
+    [Inject]
+    protected SecurityWithPScoresService? securityWithPScores { get; set; }
+
+    #endregion Protected Properties
+
+    #region Protected Methods
 
     protected async Task ExcelDownload()
     {
@@ -106,4 +120,6 @@ public partial class AllSecurities
         DisplaySubPages = true;
         return Task.CompletedTask;
     }
+
+    #endregion Protected Methods
 }

@@ -42,6 +42,8 @@
 
 h3, p {
     font-family: 'PT Sans', sans-serif;
+    text-align: justify;
+    word-wrap: break-word;
 }
 
 ol li {

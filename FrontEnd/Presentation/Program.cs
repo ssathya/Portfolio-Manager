@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.JSInterop;
 using OfficeOpenXml;
 using Presentation.Data;
+using Presentation.Data.Charts;
 using PsqlAccess;
 using PsqlAccess.SecListMaintain;
 using System.Globalization;
@@ -85,8 +86,10 @@ static void SetupDI(IServiceCollection services)
 {
     services.AddScoped<ExcelServiceAllSecurities>();
     services.AddScoped<ExcelServiceFinancial>();
-    services.AddScoped<ScoreDetailService>();
     services.AddScoped<IndexComponentListService>();
+    services.AddScoped<MovingAverageService>();
+    services.AddScoped<PriceService>();
+    services.AddScoped<ScoreDetailService>();
     services.AddSingleton(typeof(IRepository<>), typeof(GenericRepository<>));
     services.AddSingleton<BalanceSheetService>();
     services.AddSingleton<CashFlowService>();
@@ -94,6 +97,5 @@ static void SetupDI(IServiceCollection services)
     services.AddSingleton<IncomeStatementService>();
     services.AddSingleton<MomMfDolAvgsService>();
     services.AddSingleton<OverviewService>();
-    services.AddScoped<PriceService>();
     services.AddSingleton<SecurityWithPScoresService>();
 }

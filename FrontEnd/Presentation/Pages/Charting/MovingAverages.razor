@@ -13,8 +13,7 @@
                   SelectedRowChanged="OnSelectedRowChangedAsync"
                   Resizable
                   FixedHeader
-                  Responsive>
-            @*<DataGridColumn />*@
+                  Responsive>            
             <DataGridColumn Field="@nameof(IndexComponent.Ticker)" Caption="Symbol" Sortable="true" />
             <DataGridColumn Field="@nameof(IndexComponent.CompanyName)" Caption="Security" Sortable="true" />
         </DataGrid>
@@ -43,7 +42,7 @@
                             </DropdownMenu>
                         </Dropdown>
                     </Field>
-                </Fields>                  
+                </Fields>
             </div>
         </Row>
         <Row>
@@ -51,4 +50,18 @@
         </Row>
     </Column>
 </Row>
-@selectedChartType
+<Row>
+    @if (showChart)
+    {
+        <Row HorizontalGutter="32" VerticalGutter="16" Class="align-content-center">
+            <Column ColumnSize="ColumnSize.Is10.OnTablet" Class="align-content-center">
+                <Alert Color="Color.Primary" Visible>
+                <MovAvgCharting firstChartValues="@firstChartValues" 
+                    secondChartValues="@secondChartValues" 
+                    Quotes="@quotes"
+                    />
+                </Alert>
+            </Column>
+        </Row>
+    }
+</Row>

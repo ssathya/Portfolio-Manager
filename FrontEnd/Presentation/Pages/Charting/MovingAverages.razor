@@ -24,7 +24,7 @@
                 <Fields>
                     <Field ColumnSize="ColumnSize.Is3.OnTablet">
                         <FieldLabel>First Value</FieldLabel>
-                        <NumericPicker TValue="int?" @bind-Value="@firstValue" Min="20" Max="100"></NumericPicker>
+                        <NumericPicker TValue="int?" @bind-Value="@firstValue"  Min="20" Max="100"></NumericPicker>
                     </Field>
                     <Field ColumnSize="ColumnSize.Is3.OnTablet">
                         <FieldLabel>Second Value</FieldLabel>
@@ -58,6 +58,7 @@
                 <Alert Color="Color.Primary" Visible>
                 <MovAvgCharting firstChartValues="@firstChartValues" 
                     secondChartValues="@secondChartValues" 
+                    DisplayValues= "@MsgToDisplay"
                     Quotes="@quotes"
                     />
                 </Alert>

@@ -41,7 +41,7 @@ public class MovingAverageService
         return Quotes;
     }
 
-    public async Task<IEnumerable<SmaResult>?> ExecAsync(string ticker, int period, bool persistedData = true)
+    public async Task<IEnumerable<SmaResult>?> ExecAsyncSma(string ticker, int period, bool persistedData = true)
     {
         if (priceService == null)
         {
@@ -53,6 +53,21 @@ public class MovingAverageService
             await ExecAsync(ticker);
         }
         IEnumerable<SmaResult> results = Quotes.GetSma(period);
+        return results;
+    }
+
+    public async Task<IEnumerable<EmaResult>?> ExecAsyncEma(string ticker, int period, bool persistedData = true)
+    {
+        if (priceService == null)
+        {
+            logger.LogError("Services were not built by CLI!");
+            return null;
+        }
+        if (!lastTicker.Equals(ticker) || !Quotes!.Any() || persistedData != true)
+        {
+            await ExecAsync(ticker);
+        }
+        IEnumerable<EmaResult> results = Quotes.GetEma(period);
         return results;
     }
 }

@@ -1,1 +1,7 @@
-﻿<LineChart @ref="firstChart" TItem="double" />
+﻿@if (DisplayValues != null && DisplayValues.Keys.Contains("ChartTitle"))
+{
+    <h2>
+        @DisplayValues["ChartTitle"] Moving Average
+    </h2>
+}
+<LineChart @ref="firstChart" TItem="double" />

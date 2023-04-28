@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Presentation.Data;
 using Presentation.Data.Charts;
+using Presentation.Models;
 using Skender.Stock.Indicators;
 
 namespace Presentation.Pages.Charting;
@@ -16,7 +17,7 @@ public partial class MovingAverages
 
     private List<IndexComponent>? indexComponents;
     protected int? firstValue, secondValue;
-    protected IEnumerable<SmaResult>? firstChartValues, secondChartValues;
+    protected IEnumerable<ChartingValues>? firstChartValues, secondChartValues;
     protected List<Quote> quotes = new();
 
     protected List<string> chartType = new()
@@ -29,6 +30,7 @@ public partial class MovingAverages
     protected IndexComponent? selectedIndexComponent;
     protected bool displaySubmitButton = true;
     protected bool showChart = false;
+    protected Dictionary<string, string>? MsgToDisplay;
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,7 +38,9 @@ public partial class MovingAverages
         {
             return;
         }
-        indexComponents = await indexComponentListService.ExecAsync();
+        indexComponents = (await indexComponentListService.ExecAsync())
+            .OrderBy(x => x.Ticker)
+            .ToList();
     }
 
     protected Task HandleDropdownItemClicked(object value)
@@ -59,9 +63,32 @@ public partial class MovingAverages
         {
             return;
         }
-        firstChartValues = await movingAverage.ExecAsync(selectedIndexComponent.Ticker, firstValue ?? 20, true);
-        secondChartValues = await movingAverage.ExecAsync(selectedIndexComponent.Ticker, secondValue ?? 50, true);
+        if (selectedChartType.Equals(chartType[0])) //simple
+        {
+            IEnumerable<SmaResult> x = await movingAverage.ExecAsyncSma(selectedIndexComponent.Ticker, firstValue ?? 20, true) ?? new List<SmaResult>();
+            firstChartValues = from x1 in x
+                               select (ChartingValues)x1;
+            x = await movingAverage.ExecAsyncSma(selectedIndexComponent.Ticker, secondValue ?? 50, true) ?? new List<SmaResult>();
+            secondChartValues = from x1 in x
+                                select (ChartingValues)x1;
+        }
+        else if (selectedChartType.Equals(chartType[1])) //exponential
+        {
+            var x = await movingAverage.ExecAsyncEma(selectedIndexComponent.Ticker, firstValue ?? 20, true) ?? new List<EmaResult>();
+            firstChartValues = from x1 in x
+                               select (ChartingValues)x1;
+            x = await movingAverage.ExecAsyncEma(selectedIndexComponent.Ticker, secondValue ?? 50, true) ?? new List<EmaResult>();
+            secondChartValues = from x1 in x
+                                select (ChartingValues)x1;
+        }
+
         quotes = await movingAverage.ExecAsync(selectedIndexComponent.Ticker);
+        MsgToDisplay ??= new();
+        MsgToDisplay.Clear();
+
+        MsgToDisplay["FirstPeriodTitle"] = $"{firstValue} days";
+        MsgToDisplay["SecondPeriodTitle"] = $"{secondValue} days";
+        MsgToDisplay["ChartTitle"] = $"{selectedIndexComponent.CompanyName}'s {selectedChartType}";
         showChart = true;
     }
 
@@ -69,6 +96,7 @@ public partial class MovingAverages
     {
         if (selectedIndexComponent != null &&
             selectedIndexComponent.Ticker != string.Empty &&
+            firstValue != null && secondValue != null &&
             firstValue != 0 && secondValue != 0)
         {
             displaySubmitButton = false;

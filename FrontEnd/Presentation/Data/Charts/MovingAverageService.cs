@@ -48,10 +48,7 @@ public class MovingAverageService
             logger.LogError("Services were not built by CLI!");
             return null;
         }
-        if (!lastTicker.Equals(ticker) || !Quotes!.Any() || persistedData != true)
-        {
-            await ExecAsync(ticker);
-        }
+        await ExecAsync(ticker);
         IEnumerable<SmaResult> results = Quotes.GetSma(period);
         return results;
     }

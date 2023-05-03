@@ -10,12 +10,8 @@ namespace Presentation.Pages.Charting;
 public partial class MovingAverages
 {
     [Inject]
-    protected IndexComponentListService? indexComponentListService { get; set; }
-
-    [Inject]
     protected MovingAverageService? movingAverage { get; set; }
 
-    private List<IndexComponent>? indexComponents;
     protected int? firstValue, secondValue;
     protected IEnumerable<ChartingValues>? firstChartValues, secondChartValues;
     protected List<Quote> quotes = new();
@@ -31,17 +27,6 @@ public partial class MovingAverages
     protected bool displaySubmitButton = true;
     protected bool showChart = false;
     protected Dictionary<string, string>? MsgToDisplay;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (indexComponentListService == null || movingAverage == null)
-        {
-            return;
-        }
-        indexComponents = (await indexComponentListService.ExecAsync())
-            .OrderBy(x => x.Ticker)
-            .ToList();
-    }
 
     protected Task HandleDropdownItemClicked(object value)
     {

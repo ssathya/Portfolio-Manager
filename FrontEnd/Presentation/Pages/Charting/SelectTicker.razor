@@ -1,0 +1,15 @@
+﻿@using ApplicationModels.Indexes
+
+<DataGrid TItem="IndexComponent"
+          Data="indexComponents"
+          ShowPager
+          PageSize="10"
+          Filterable
+          SelectedRowChanged="OnSelectedRowChangedAsync"
+          Resizable
+          FixedHeader
+          Responsive>
+    <DataGridColumn Field="@nameof(IndexComponent.Sector)" Caption="Sector" Sortable="true" />
+    <DataGridColumn Field="@nameof(IndexComponent.Ticker)" Caption="Symbol" Sortable="true" />
+    <DataGridColumn Field="@nameof(IndexComponent.CompanyName)" Caption="Security" Sortable="true" />    
+</DataGrid>

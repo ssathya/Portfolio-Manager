@@ -87,6 +87,7 @@ static void SetupDI(IServiceCollection services)
     services.AddScoped<ExcelServiceAllSecurities>();
     services.AddScoped<ExcelServiceFinancial>();
     services.AddScoped<IndexComponentListService>();
+    services.AddScoped<MacdService>();
     services.AddScoped<MovingAverageService>();
     services.AddScoped<PriceService>();
     services.AddScoped<ScoreDetailService>();

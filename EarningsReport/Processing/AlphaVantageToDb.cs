@@ -162,7 +162,7 @@ public class AlphaVantageToDb
             var incomeRecord = await incomeStatementRepository.FindAll(x => x.Ticker == ticker);
             if (incomeRecord != null && incomeRecord.Any())
             {
-                await incomeStatementRepository.Update(incomeRecord);
+                await incomeStatementRepository.Remove(incomeRecord);
             }
             var overviewRecord = await overViewRepository.FindAll(x => x.Ticker == ticker);
             if (overviewRecord != null && overviewRecord.Any())

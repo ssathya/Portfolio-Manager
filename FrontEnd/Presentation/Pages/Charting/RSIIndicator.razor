@@ -1,0 +1,29 @@
+﻿@page "/rsi"
+<PageTitle>RSI</PageTitle>
+<h2>Relative Strength Index</h2>
+
+<Row>
+    <Column ColumnSize="ColumnSize.Is6.OnTablet">
+        <SelectTicker SelectionChanged="OnSelectedRowChangedAsync" />
+    </Column>
+    <Column ColumnSize="ColumnSize.Is6.OnTablet">
+        <Row>
+            <Div>
+                <Fields>
+                    <Field ColumnSize="ColumnSize.Is4.OnTablet">
+                        <FieldLabel>Over Sold</FieldLabel>
+                        <NumericPicker TValue="int" @bind-Value="@overSold" @onfocusout="@DataEntryChange" Min="2" Max="50"></NumericPicker>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4.OnTablet">
+                        <FieldLabel>Over Bought</FieldLabel>
+                        <NumericPicker TValue="int" @bind-Value="@overBought" @onfocusout="@DataEntryChange" Min="50" Max="99"></NumericPicker>
+                    </Field>
+                    <Field ColumnSize="ColumnSize.Is4.OnTablet">
+                        <FieldLabel>Period</FieldLabel>
+                        <NumericPicker TValue="int" @bind-Value="@lookBackPeriod" @onfocusout="@DataEntryChange" Min="10" Max="100"></NumericPicker>
+                    </Field>
+                </Fields>
+            </Div>
+        </Row>
+    </Column>
+</Row>

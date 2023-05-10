@@ -5,18 +5,20 @@ using Skender.Stock.Indicators;
 
 namespace Presentation.Pages.Charting;
 
-public partial class Macd
+public partial class RSIIndicator
 {
     protected bool disableSubmitButton = true;
-    protected bool showChart = false;
-    protected IndexComponent? selectedIndexComponent;
-    protected int? fastPeriod, slowPeriod, signalPeriod;
-    protected List<Quote> quotes = new();
-    protected IEnumerable<MacdResult>? MDACresult;
     protected Dictionary<string, string> DisplayValues = new();
+    protected int lookBackPeriod = 14;
+    protected int overBought = 70;
+    protected int overSold = 30;
+    protected List<Quote> quotes = new();
+    protected IEnumerable<RsiResult>? RSIResult;
+    protected IndexComponent? selectedIndexComponent;
+    protected bool showChart = false;
 
     [Inject]
-    protected MacdService? MACDService { get; set; }
+    protected RSIService? RSIServiceInjected { get; set; }
 
     protected Task DataEntryChange(object value)
     {
@@ -27,24 +29,17 @@ public partial class Macd
 
     protected async Task GenerateCharts()
     {
-        if (MACDService == null || selectedIndexComponent == null)
+        if (RSIServiceInjected == null || selectedIndexComponent == null)
         {
             return;
         }
-        quotes = await MACDService.ExecAsync(selectedIndexComponent.Ticker);
-        MDACresult = await MACDService.ExecAsyncMacd(selectedIndexComponent.Ticker,
-            fastPeriod ?? 12,
-            slowPeriod ?? 26,
-            signalPeriod ?? 9);
+        quotes = await RSIServiceInjected.ExecAsync(selectedIndexComponent.Ticker);
+        RSIResult = await RSIServiceInjected.ExecAsync(selectedIndexComponent.Ticker, lookBackPeriod);
         DisplayValues.Clear();
         DisplayValues["Ticker"] = selectedIndexComponent.Ticker;
         DisplayValues["CompanyName"] = selectedIndexComponent.CompanyName;
         showChart = true;
-    }
-
-    protected override void OnInitialized()
-    {
-        fastPeriod = 12; slowPeriod = 26; signalPeriod = 9;
+        disableSubmitButton = true;
     }
 
     protected Task OnSelectedRowChangedAsync(IndexComponent indexComponent)
@@ -57,9 +52,10 @@ public partial class Macd
 
     private void UpdateDisplaySubmitButton()
     {
-        if (fastPeriod != null && slowPeriod != null && signalPeriod != null
-            && selectedIndexComponent != null
-            && fastPeriod < slowPeriod && signalPeriod < fastPeriod)
+        if (selectedIndexComponent != null &&
+             overSold > 2 && overSold < 50 &&
+             overBought > 50 && overBought < 99 &&
+             overBought > overSold)
         {
             disableSubmitButton = false;
         }
@@ -67,6 +63,5 @@ public partial class Macd
         {
             disableSubmitButton = true;
         }
-        return;
     }
 }

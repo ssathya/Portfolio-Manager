@@ -111,22 +111,30 @@ public partial class MACDCharting
         {
             return;
         }
+        (string Date, double value) lastMacd = (MACDResult.Last().Date.ToString("MMM-dd"), MACDResult.Last().Macd ?? 0);
+        (string Date, double value) lastSignal = (MACDResult.Last().Date.ToString("MMM-dd"), MACDResult.Last().Signal ?? 0);
+        (string Date, double value) lastHistogram = (MACDResult.Last().Date.ToString("MMM-dd"), MACDResult.Last().Histogram ?? 0);
+        (string Date, double value) lastQuotes = (Quotes.Last().Date.ToString("MMM-dd"), (double)Quotes.Last().Close);
         List<(string Date, double value)> mACD = MACDResult.Skip(daysToSkip)
                                              .Where((x, i) => i % daysToSkip == 0)
                                              .Select(x => (x.Date.ToString("MMM-dd"), x.Macd ?? 0))
                                              .ToList();
+        if (mACD.Last() != lastMacd) { mACD.Add(lastMacd); }
         List<(string Date, double value)> signal = MACDResult.Skip(daysToSkip)
                                              .Where((x, i) => i % daysToSkip == 0)
                                              .Select(x => (x.Date.ToString("MMM-dd"), x.Signal ?? 0))
                                              .ToList();
+        if (signal.Last() != lastSignal) { signal.Add(lastSignal); }
         List<(string Date, double value)> histogram = MACDResult.Skip(daysToSkip)
                                              .Where((x, i) => i % daysToSkip == 0)
                                              .Select(x => (x.Date.ToString("MMM-dd"), x.Histogram ?? 0))
                                              .ToList();
+        if (histogram.Last() != lastHistogram) { histogram.Add(lastHistogram); }
         List<(string Date, double value)> quoteValues = Quotes.Skip(daysToSkip)
                                              .Where((x, i) => i % daysToSkip == 0)
                                              .Select(x => (x.Date.ToString("MMM-dd"), (double)x.Close))
                                              .ToList();
+        if (quoteValues.Last() != lastQuotes) { quoteValues.Add(lastQuotes); }
         await BuildBarChart(mACD, signal, histogram);
         await BuildPriceChart(quoteValues);
     }

@@ -36,6 +36,7 @@ public partial class Macd
             fastPeriod ?? 12,
             slowPeriod ?? 26,
             signalPeriod ?? 9);
+        DisplayValues.Clear();
         DisplayValues["Ticker"] = selectedIndexComponent.Ticker;
         DisplayValues["CompanyName"] = selectedIndexComponent.CompanyName;
         showChart = true;

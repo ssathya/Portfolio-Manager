@@ -25,5 +25,22 @@
                 </Fields>
             </Div>
         </Row>
+        <Row>
+            <Button Color="Color.Primary" Clicked="@GenerateCharts" disabled=@disableSubmitButton>Generate Chart</Button>
+        </Row>
     </Column>
+</Row>
+<Row>
+    @if(showChart)
+    {
+        <Row HorizontalGutter="32" VerticalGutter="16" Class="align-content-center">
+            <Column ColumnSize="ColumnSize.Is10.OnTablet" Class="align-content-center">
+                <Alert Color="Color.Primary" Visible>
+                <RSICharting DisplayValues="@DisplayValues" Quotes="@quotes"
+                    RsiResults="@RSIResult" overBought="@overBought" overSold="@overSold"
+                    lookBackPeriod="@lookBackPeriod"></RSICharting>
+            </Alert>
+        </Column>
+    </Row>
+    }
 </Row>

@@ -74,7 +74,7 @@ public partial class MovAvgCharting
             PointRadius = 3,
             CubicInterpolationMode = "monotone"
         });
-        
+
         await firstChart.AddLabelsDatasetsAndUpdate(fstChtValues.Select(x => x.Date).ToList(), firstChartDataset);
 
         return;
@@ -87,6 +87,9 @@ public partial class MovAvgCharting
 #pragma warning disable CS8604 // Possible null reference argument.
         int skipValues = firstChartValues.Count(x => x.Value == null || x.Value == 0);
         int secondSkipValues = secondChartValues.Count(x => x.Value == null || x.Value == 0);
+        (string Date, double value) fstChtLast = (firstChartValues.Last().Date.ToString("MMM-dd"), firstChartValues.Last().Value ?? 0);
+        (string Date, double value) secondChtLast = (secondChartValues.Last().Date.ToString("MMM-dd"), secondChartValues.Last().Value ?? 0);
+        (string Date, double value) quotesLast = (Quotes.Last().Date.ToString("MMM-dd"), (double)Quotes.Last().Close);
 #pragma warning restore CS8604 // Possible null reference argument.
         skipValues = skipValues > secondSkipValues ? skipValues : secondSkipValues;
         skipValues++;
@@ -95,15 +98,18 @@ public partial class MovAvgCharting
             .Where((x, i) => i % daysToSkip == 0)
             .Select(x => (x.Date.ToString("MMM-dd"), x.Value ?? 0))
             .ToList();
+        if (fstChtValues.Last() != fstChtLast) { fstChtValues.Add(fstChtLast); }
         secondChtValues = secondChartValues.Skip(skipValues)
             .Where((x, i) => i % daysToSkip == 0)
            .Select(x => (x.Date.ToString("MMM-dd"), x.Value ?? 0))
            .ToList();
+        if (secondChtValues.Last() != secondChtLast) { secondChtValues.Add(secondChtLast); }
 #pragma warning disable CS8604 // Possible null reference argument.
         quoteValues = Quotes.Skip(skipValues)
             .Where((x, i) => i % daysToSkip == 0)
             .Select(x => (x.Date.ToString("MMM-dd"), (double)x.Close))
             .ToList();
+        if (quoteValues.Last() != quotesLast) { quoteValues.Add(quotesLast); }
 #pragma warning restore CS8604 // Possible null reference argument.
     }
 }

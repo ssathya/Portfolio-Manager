@@ -11,6 +11,9 @@ public class PriceService
     private readonly ILogger<PriceService> logger;
     private readonly IRepository<YPrice> priceRepository;
     private readonly IRepository<Compute> computeRepository;
+    private static List<YPrice>? priceCache = null;
+    private static DateTimeOffset? createdTime;
+    private static TimeSpan expiresAfter = TimeSpan.FromHours(5);
 
     public PriceService(ILogger<PriceService> logger
         , IRepository<YPrice> priceRepository
@@ -19,6 +22,27 @@ public class PriceService
         this.logger = logger;
         this.priceRepository = priceRepository;
         this.computeRepository = computeRepository;
+    }
+
+    public async Task<List<YPrice>?> ExecAsync()
+    {
+        if (priceCache != null && DateTimeOffset.UtcNow - createdTime <= expiresAfter)
+        {
+            return priceCache;
+        }
+        try
+        {
+            IEnumerable<YPrice> priceForAllSecurities = await priceRepository.FindAll();
+            priceCache = priceForAllSecurities.ToList();
+            createdTime = DateTimeOffset.UtcNow;
+            return priceCache;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Error reading pricing details");
+            logger.LogError(ex.ToString());
+            return null;
+        }
     }
 
     public async Task<YPrice?> ExecAsync(string ticker)
@@ -34,6 +58,14 @@ public class PriceService
 
     private async Task<YPrice?> ExtractValueFromDb(string ticker)
     {
+        if (priceCache != null && DateTimeOffset.Now - createdTime <= expiresAfter)
+        {
+            var priceForSecurity = priceCache.Find(x => x.Ticker == ticker.ToUpper().Trim());
+            if (priceForSecurity != null)
+            {
+                return priceForSecurity;
+            }
+        }
         try
         {
             YPrice? priceForSecurity = (await priceRepository.FindAll(r => r.Ticker == ticker.ToUpper().Trim())).FirstOrDefault();

@@ -1,0 +1,91 @@
+﻿@page "/LinearRegression"
+@using ApplicationModels.ViewModel;
+
+<h2>Linear Regression</h2>
+<Alert Color="Color.Success" @bind-Visible="@visible">
+    <AlertDescription>
+        This is not a chart, but it belongs to the category of indicators.
+    </AlertDescription>
+    <CloseButton />
+</Alert>
+@if (securityDetails == null || securityDetails.Count == 0)
+{
+    <div class="mx-auto">
+        <SpinKit Type="SpinKitType.Bounce" />
+    </div>
+
+}
+else
+{
+    <DataGrid TItem="SecurityDetails" 
+        Data="@securityDetails" 
+        ShowPager        
+        Filterable
+        Resizable
+        FixedHeader
+        Virtualize
+        Responsive>
+    <DataGridColumn Field="@nameof(SecurityDetails.Ticker)" Caption="Symbol" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.CompanyName)" Caption="Security" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.Sector)" Caption="Sector" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.SubSector)" Caption="Sub-Security" Sortable="true" />
+    <DataGridColumn Field="@nameof(SecurityDetails.Momentum)" DisplayFormat="{0:00}" Caption="Momentum" CustomFilter="@OnDvFilter" Sortable="true">
+        <FilterTemplate>
+            <Select TValue="decimal" SelectedValue="@selectedMom" SelectedValueChanged="@(value=>{selectedMom=value; context.TriggerFilterChange( selectedMom ); })">
+                <SelectItem Value="@(-300M)">All</SelectItem>
+                <SelectItem Value="@(0M)">Positive</SelectItem>
+                <SelectItem Value="@(30M)">20 or more</SelectItem>
+                <SelectItem Value="@(40M)">40 or more</SelectItem>
+                <SelectItem Value="@(50M)">50 or more</SelectItem>
+            </Select>
+        </FilterTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(SecurityDetails.PiotroskiComputedValue)" CustomFilter="@OnPScoreFilter" Caption="P-F Score" Sortable="true">
+        <FilterTemplate>
+            <Select TValue="int" SelectedValue="@selectedPScore" SelectedValueChanged="@(value=>{selectedPScore=value; context.TriggerFilterChange( selectedPScore ); })">
+                <SelectItem Value="@(0)">All</SelectItem>
+                <SelectItem Value="@(1)">1 or better</SelectItem>
+                <SelectItem Value="@(2)">2 or better</SelectItem>
+                <SelectItem Value="@(3)">3 or better</SelectItem>
+                <SelectItem Value="@(4)">4 or better</SelectItem>
+                <SelectItem Value="@(5)">5 or better</SelectItem>
+                <SelectItem Value="@(6)">6 or better</SelectItem>
+                <SelectItem Value="@(7)">7 or better</SelectItem>
+                <SelectItem Value="@(8)">8 or better</SelectItem>
+                <SelectItem Value="@(9)">9</SelectItem>
+            </Select>
+        </FilterTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(SecurityDetails.SimFinRating)" CustomFilter="@OnPScoreFilter" Caption="P-F Score(external)" Sortable="true">
+        <FilterTemplate>
+            <Select TValue="int" SelectedValue="@selectedPScore" SelectedValueChanged="@(value=>{selectedSimFinScore=value; context.TriggerFilterChange( selectedPScore ); })">
+                <SelectItem Value="@(0)">All</SelectItem>
+                <SelectItem Value="@(1)">1 or better</SelectItem>
+                <SelectItem Value="@(2)">2 or better</SelectItem>
+                <SelectItem Value="@(3)">3 or better</SelectItem>
+                <SelectItem Value="@(4)">4 or better</SelectItem>
+                <SelectItem Value="@(5)">5 or better</SelectItem>
+                <SelectItem Value="@(6)">6 or better</SelectItem>
+                <SelectItem Value="@(7)">7 or better</SelectItem>
+                <SelectItem Value="@(8)">8 or better</SelectItem>
+                <SelectItem Value="@(9)">9</SelectItem>
+            </Select>
+        </FilterTemplate>
+    </DataGridColumn>
+    <DataGridColumn Field="@nameof(SecurityDetails.DollarVolume)" DisplayFormat="{0:C0}" CustomFilter="@OnDvFilter" Caption="Dollar Volume" Sortable="true">
+        <FilterTemplate>
+            <Select TValue="decimal" SelectedValue="@selectedDV" SelectedValueChanged="@(value=>{selectedDV=value; context.TriggerFilterChange( selectedDV ); })">
+                <SelectItem Value="@(0)">All</SelectItem>
+                <SelectItem Value="@(100000000M)">100MM or more</SelectItem>
+                <SelectItem Value="@(250000000M)">250MM or more</SelectItem>
+                <SelectItem Value="@(500000000M)">500MM or more</SelectItem>
+            </Select>
+        </FilterTemplate>
+    </DataGridColumn>
+</DataGrid>
+}
+
+
+@code {
+    bool visible = true;
+}

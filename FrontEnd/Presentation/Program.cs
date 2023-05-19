@@ -84,6 +84,7 @@ app.Run();
 
 static void SetupDI(IServiceCollection services)
 {
+    services.AddScoped<ComputeLinReg>();
     services.AddScoped<ExcelServiceAllSecurities>();
     services.AddScoped<ExcelServiceFinancial>();
     services.AddScoped<IndexComponentListService>();

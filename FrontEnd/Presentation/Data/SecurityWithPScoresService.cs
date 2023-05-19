@@ -7,6 +7,9 @@ public class SecurityWithPScoresService
 {
     private readonly ILogger<SecurityWithPScoresService> logger;
     private readonly IRepository<SecurityWithPScore> secScoreRepository;
+    private static List<SecurityWithPScore>? cachedValues = null;
+    private static DateTimeOffset? createdTime;
+    private static TimeSpan expiresAfter = TimeSpan.FromHours(5);
 
     public SecurityWithPScoresService(ILogger<SecurityWithPScoresService> logger
         , IRepository<SecurityWithPScore> secScoreRepository)
@@ -17,6 +20,10 @@ public class SecurityWithPScoresService
 
     public async Task<List<SecurityWithPScore>> ExecAsync()
     {
+        if (cachedValues != null && DateTimeOffset.UtcNow - createdTime <= expiresAfter)
+        {
+            return cachedValues;
+        }
         try
         {
             IEnumerable<SecurityWithPScore> returnValue = await secScoreRepository.FindAll();
@@ -24,7 +31,9 @@ public class SecurityWithPScoresService
             {
                 FixNullValues(swps);
             }
-            return returnValue.ToList();
+            cachedValues = returnValue.ToList();
+            createdTime = DateTimeOffset.UtcNow;
+            return cachedValues;
         }
         catch (Exception ex)
         {

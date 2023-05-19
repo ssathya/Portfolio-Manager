@@ -7,6 +7,9 @@ public class MomMfDolAvgsService
 {
     private readonly ILogger<MomMfDolAvgsService> logger;
     private readonly IRepository<MomMfDolAvg> repository;
+    private static List<MomMfDolAvg> momMfDolAvgas = new();
+    private static DateTimeOffset? createdTime;
+    private static TimeSpan expiresAfter = TimeSpan.FromHours(5);
 
     public MomMfDolAvgsService(ILogger<MomMfDolAvgsService> logger
         , IRepository<MomMfDolAvg> repository)
@@ -17,10 +20,16 @@ public class MomMfDolAvgsService
 
     public async Task<List<MomMfDolAvg>> ExecAsync()
     {
+        if (momMfDolAvgas.Any() && DateTimeOffset.UtcNow - createdTime <= expiresAfter)
+        {
+            return momMfDolAvgas;
+        }
         try
         {
             var returnValues = await repository.FindAll();
-            return returnValues.ToList();
+            momMfDolAvgas = returnValues.ToList();
+            createdTime = DateTimeOffset.UtcNow;
+            return momMfDolAvgas;
         }
         catch (Exception ex)
         {
